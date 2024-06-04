@@ -1,0 +1,10 @@
+{
+  "name": "com.witalosk.runtime_fragment_shader",
+  "displayName": "Runtime Fragment Shader",
+  "version": "0.1.0",
+  "unity": "2021.3",
+  "description": "Compile the HLSL fragment shader at runtime to get the drawn texture.",
+  "author": {
+    "name": "witalosk"
+  }
+}
