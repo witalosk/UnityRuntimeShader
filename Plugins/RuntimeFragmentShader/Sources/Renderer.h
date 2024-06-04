@@ -53,6 +53,6 @@ public:
 private:
 	void Start();
 	void Stop();
-	void CompileVertexShader();
+	ID3DBlob* CompileVertexShader();
 	
 };

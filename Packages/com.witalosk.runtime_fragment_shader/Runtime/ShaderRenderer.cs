@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Runtime.InteropServices;
 using UnityEngine;
 
 namespace RuntimeFragmentShader
@@ -32,7 +33,7 @@ namespace RuntimeFragmentShader
         
         public void CompilePixelShaderFromString(string shaderCode)
         {
-            Plugin.CompilePixelShaderFromString(_instancePtr, shaderCode);
+            Plugin.CompilePixelShaderFromString(_instancePtr, Marshal.StringToHGlobalAnsi(shaderCode));
         }
 
         IEnumerator OnRender()

@@ -20,7 +20,12 @@ void Renderer::Start()
 	CreateResources();
 
 	// Compile Vertex Shader
-	CompileVertexShader();
+	auto compiledVs = CompileVertexShader();
+	if (compiledVs == nullptr)
+	{
+		UNITY_LOG(_logger, "[ShaderRenderer] Failed to compile vertex shader");
+		return;
+	}
 
 
 	// input layout
@@ -28,35 +33,51 @@ void Renderer::Start()
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
-	_device->CreateInputLayout(_dx11InputElementDesc, 2, _vertexShader, sizeof(&_vertexShader), &_inputLayout);
+	HRESULT hr = _device->CreateInputLayout(_dx11InputElementDesc, 1, compiledVs->GetBufferPointer(), compiledVs->GetBufferSize(), &_inputLayout);
+	if (FAILED(hr))
+	{
+		UNITY_LOG(_logger, "[ShaderRenderer] Failed to create input layout");
+	}
 	
 	UNITY_LOG(_logger, "[ShaderRenderer] Started");
 }
 
 void Renderer::Update()
 {
+	// if (_pixelShader == nullptr)
+	// {
+	// 	UNITY_LOG(_logger, "[ShaderRenderer] Pixel shader not set");
+	// }
+	//
+	// if (_texture == nullptr)
+	// {
+	// 	UNITY_LOG(_logger, "[ShaderRenderer] Texture not set");
+	// }
+	
 	if (!_isRunning || _pixelShader == nullptr || _unity == nullptr || _texture == nullptr) return;
+	
 	ID3D11DeviceContext* context;
 	_device->GetImmediateContext(&context);
+	
+	context->OMSetRenderTargets(1, &_frameBufferView, nullptr);
+	
+	FLOAT backgroundColor[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
+	context->ClearRenderTargetView(_frameBufferView, backgroundColor);
 
-
-
-	context->OMSetDepthStencilState(_depthState, 0);
-	context->RSSetState(_rasterState);
-	context->OMSetBlendState(_blendState, nullptr, 0xFFFFFFFF);
+	// context->OMSetDepthStencilState(_depthState, 0);
+	// context->RSSetState(_rasterState);
+	// context->OMSetBlendState(_blendState, nullptr, 0xFFFFFFFF);
 	
 	// Update constant buffer - just the world matrix in our case
 	// context->UpdateSubresource(_constantBuffer, 0, nullptr, worldMatrix, 64, 0);
+	// context->VSSetConstantBuffers(0, 1, &m_CB);
 
 	// Set shaders
-	// context->VSSetConstantBuffers(0, 1, &m_CB);
 	context->VSSetShader(_vertexShader, nullptr, 0);
 	context->PSSetShader(_pixelShader, nullptr, 0);
 
 
-	context->OMSetRenderTargets(1, &_frameBufferView, nullptr);
-	FLOAT backgroundColor[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
-	context->ClearRenderTargetView(_frameBufferView, backgroundColor);
+
 	
 	// const int kVertexSize = 12 + 4;
 	// context->UpdateSubresource(_vertexBuffer, 0, nullptr, verticesFloat3Byte4, triangleCount * 3 * kVertexSize, 0);
@@ -71,6 +92,7 @@ void Renderer::Update()
 
 	context->Release();
 
+	UNITY_LOG(_logger, "[ShaderRenderer] Rendered frame");
 	_renderCount++;
 }
 
@@ -167,13 +189,26 @@ void Renderer::CompilePixelShaderFromString(const std::string& source)
 	if (FAILED(hr))
 	{
 		UNITY_LOG_ERROR(_logger, "[ShaderRenderer] Failed to compile pixel shader");
+		UNITY_LOG(_logger, source.c_str());
 		return;
 	}
 
-	_device->CreatePixelShader(compiledShader, compiledShader->GetBufferSize(), nullptr, &_pixelShader);
+	hr = _device->CreatePixelShader(compiledShader->GetBufferPointer(), compiledShader->GetBufferSize(), nullptr, &_pixelShader);
+
+	if (FAILED(hr))
+	{
+		UNITY_LOG_ERROR(_logger, "[ShaderRenderer] Failed to compile pixel shader");
+		UNITY_LOG(_logger, std::to_string(hr).c_str());
+		return;
+	}
+	
+	UNITY_LOG(_logger, "[ShaderRenderer] Succeeded to compile fragment shader");
+	UNITY_LOG(_logger, source.c_str());
+
+
 }
 
-void Renderer::CompileVertexShader()
+ID3DBlob* Renderer::CompileVertexShader()
 {
 	std::string vs = "float4 Vert( float4 pos : POSITION ) : SV_POSITION { return float4(pos.xy, 0.0, 1.0); }";
 
@@ -182,8 +217,18 @@ void Renderer::CompileVertexShader()
 	if (FAILED(hr))
 	{
 		UNITY_LOG_ERROR(_logger, "[ShaderRenderer] Failed to compile vertex shader");
-		return;
+		UNITY_LOG(_logger, vs.c_str());
+		return nullptr;
 	}
 
-	_device->CreateVertexShader(compiledShader, compiledShader->GetBufferSize(), nullptr, &_vertexShader);
+	hr = _device->CreateVertexShader(compiledShader->GetBufferPointer(), compiledShader->GetBufferSize(), nullptr, &_vertexShader);
+	
+	if (FAILED(hr))
+	{
+		UNITY_LOG(_logger, "[ShaderRenderer] Failed to compile vertex shader");
+	}
+
+	UNITY_LOG(_logger, "[ShaderRenderer] Succeeded to compile vertex shader");
+
+	return compiledShader;
 }
