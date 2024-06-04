@@ -49,4 +49,11 @@ extern "C"
 		if (g_renderer == renderer) g_renderer = nullptr;
 		delete renderer;
 	}
+
+	UNITY_INTERFACE_EXPORT void UNITY_INTERFACE_API CompilePixelShaderFromString(void* ptr, const char* source)
+	{
+		auto renderer = reinterpret_cast<Renderer*>(ptr);
+		renderer->CompilePixelShaderFromString(source);
+	}
+
 }

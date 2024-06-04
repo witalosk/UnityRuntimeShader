@@ -29,6 +29,11 @@ namespace RuntimeFragmentShader
             _isDestroyed = true;
             Plugin.ReleaseRenderer(_instancePtr);
         }
+        
+        public void CompilePixelShaderFromString(string shaderCode)
+        {
+            Plugin.CompilePixelShaderFromString(_instancePtr, shaderCode);
+        }
 
         IEnumerator OnRender()
         {

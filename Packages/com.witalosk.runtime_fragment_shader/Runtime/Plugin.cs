@@ -16,5 +16,8 @@ namespace RuntimeFragmentShader
 
         [DllImport("RuntimeFragmentShader")]
         public static extern IntPtr GetRenderEventFunc();
+        
+        [DllImport("RuntimeFragmentShader")]
+        public static extern void CompilePixelShaderFromString(IntPtr ptr, string shaderCode);
     }
 }

@@ -16,46 +16,59 @@ void Renderer::Start()
 	_isRunning = true;
 	_device = _unity->Get<IUnityGraphicsD3D11>()->GetDevice();
 	_logger = _unity->Get<IUnityLog>();
-	// CreateResources();
-	UNITY_LOG(_logger, "[ShaderRenderer] Started");
 
+	CreateResources();
+
+	// Compile Vertex Shader
+	CompileVertexShader();
+
+
+	// input layout
+	D3D11_INPUT_ELEMENT_DESC _dx11InputElementDesc[] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	};
+	_device->CreateInputLayout(_dx11InputElementDesc, 2, _vertexShader, sizeof(&_vertexShader), &_inputLayout);
+	
+	UNITY_LOG(_logger, "[ShaderRenderer] Started");
 }
 
 void Renderer::Update()
 {
-	if (!_isRunning || _unity == nullptr || _texture == nullptr) return;
+	if (!_isRunning || _pixelShader == nullptr || _unity == nullptr || _texture == nullptr) return;
 	ID3D11DeviceContext* context;
 	_device->GetImmediateContext(&context);
 
 
 
-	// context->OMSetDepthStencilState(_depthState, 0);
-	// context->RSSetState(_rasterState);
-	// context->OMSetBlendState(_blendState, nullptr, 0xFFFFFFFF);
+	context->OMSetDepthStencilState(_depthState, 0);
+	context->RSSetState(_rasterState);
+	context->OMSetBlendState(_blendState, nullptr, 0xFFFFFFFF);
 	
 	// Update constant buffer - just the world matrix in our case
 	// context->UpdateSubresource(_constantBuffer, 0, nullptr, worldMatrix, 64, 0);
 
 	// Set shaders
 	// context->VSSetConstantBuffers(0, 1, &m_CB);
-	// context->VSSetShader(m_VertexShader, nullptr, 0);
-	// context->PSSetShader(m_PixelShader, nullptr, 0);
+	context->VSSetShader(_vertexShader, nullptr, 0);
+	context->PSSetShader(_pixelShader, nullptr, 0);
 
-	// Update vertex buffer
-	// const int kVertexSize = 12 + 4;
-	// context->UpdateSubresource(m_VB, 0, nullptr, verticesFloat3Byte4, triangleCount * 3 * kVertexSize, 0);
-
-	// set input assembler data and draw
-	// context->IASetInputLayout(_inputLayout);
-	// context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	// UINT stride = kVertexSize;
-	// UINT offset = 0;
-	// context->IASetVertexBuffers(0, 1, &m_VB, &stride, &offset);
-	// context->Draw(triangleCount * 3, 0);
 
 	context->OMSetRenderTargets(1, &_frameBufferView, nullptr);
 	FLOAT backgroundColor[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
 	context->ClearRenderTargetView(_frameBufferView, backgroundColor);
+	
+	// const int kVertexSize = 12 + 4;
+	// context->UpdateSubresource(_vertexBuffer, 0, nullptr, verticesFloat3Byte4, triangleCount * 3 * kVertexSize, 0);
+
+	// set input assembler data and draw
+	context->IASetInputLayout(_inputLayout);
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	UINT stride = 4 * sizeof(float);
+	UINT offset = 0;
+	context->IASetVertexBuffers(0, 1, &_vertexBuffer, &stride, &offset);
+	context->Draw(2 * 3, 0);
+
 	context->Release();
 
 	_renderCount++;
@@ -78,6 +91,8 @@ void Renderer::Stop()
 
 }
 
+
+
 void Renderer::SetTexturePtr(void* ptr, int format)
 {
 	_texture = static_cast<ID3D11Texture2D*>(ptr);
@@ -95,38 +110,32 @@ void Renderer::CreateResources()
 	D3D11_BUFFER_DESC desc;
 	memset(&desc, 0, sizeof(desc));
 
+	// Update vertex buffer
+	float vertexData[] = { // x, y, u, v
+		-0.5f,  0.5f, 0.f, 0.f,
+		0.5f, -0.5f, 1.f, 1.f,
+		-0.5f, -0.5f, 0.f, 1.f,
+		-0.5f,  0.5f, 0.f, 0.f,
+		0.5f,  0.5f, 1.f, 0.f,
+		0.5f, -0.5f, 1.f, 1.f
+	};
+	
+	D3D11_SUBRESOURCE_DATA vertexSubresourceData = { vertexData };
+
 	// vertex buffer
-	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.ByteWidth = 1024;
+	desc.Usage = D3D11_USAGE_IMMUTABLE;
+	desc.ByteWidth = sizeof(vertexData);
 	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	_device->CreateBuffer(&desc, NULL, &_vertexBuffer);
+	_device->CreateBuffer(&desc, &vertexSubresourceData, &_vertexBuffer);
 
 	// constant buffer
-	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.ByteWidth = 64; // hold 1 matrix
-	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	desc.CPUAccessFlags = 0;
-	_device->CreateBuffer(&desc, NULL, &_constantBuffer);
+	// desc.Usage = D3D11_USAGE_DEFAULT;
+	// desc.ByteWidth = 64; // hold 1 matrix
+	// desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	// desc.CPUAccessFlags = 0;
+	// _device->CreateBuffer(&desc, NULL, &_constantBuffer);
+	//
 
-	// shaders
-	// HRESULT hr;
-	// hr = _device->CreateVertexShader(kVertexShaderCode, sizeof(kVertexShaderCode), nullptr, &m_VertexShader);
-	// if (FAILED(hr))
-	// 	OutputDebugStringA("Failed to create vertex shader.\n");
-	// hr = _device->CreatePixelShader(kPixelShaderCode, sizeof(kPixelShaderCode), nullptr, &m_PixelShader);
-	// if (FAILED(hr))
-	// 	OutputDebugStringA("Failed to create pixel shader.\n");
-
-	// // input layout
-	// if (m_VertexShader)
-	// {
-	// 	D3D11_INPUT_ELEMENT_DESC s_DX11InputElementDesc[] =
-	// 	{
-	// 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	// 		{ "COLOR", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	// 	};
-	// 	_device->CreateInputLayout(s_DX11InputElementDesc, 2, kVertexShaderCode, sizeof(kVertexShaderCode), &m_InputLayout);
-	// }
 
 	// render states
 	D3D11_RASTERIZER_DESC rsdesc;
@@ -149,4 +158,32 @@ void Renderer::CreateResources()
 	bdesc.RenderTarget[0].BlendEnable = FALSE;
 	bdesc.RenderTarget[0].RenderTargetWriteMask = 0xF;
 	_device->CreateBlendState(&bdesc, &_blendState);
+}
+
+void Renderer::CompilePixelShaderFromString(const std::string& source)
+{
+	ID3DBlob* compiledShader;
+	HRESULT hr = D3DCompile(source.c_str(), source.size(), nullptr, nullptr, nullptr, "Frag", "ps_4_0", 0, 0, &compiledShader, nullptr);
+	if (FAILED(hr))
+	{
+		UNITY_LOG_ERROR(_logger, "[ShaderRenderer] Failed to compile pixel shader");
+		return;
+	}
+
+	_device->CreatePixelShader(compiledShader, compiledShader->GetBufferSize(), nullptr, &_pixelShader);
+}
+
+void Renderer::CompileVertexShader()
+{
+	std::string vs = "float4 Vert( float4 pos : POSITION ) : SV_POSITION { return float4(pos.xy, 0.0, 1.0); }";
+
+	ID3DBlob* compiledShader;
+	HRESULT hr = D3DCompile(vs.c_str(), vs.size(), nullptr, nullptr, nullptr, "Vert", "vs_4_0", 0, 0, &compiledShader, nullptr);
+	if (FAILED(hr))
+	{
+		UNITY_LOG_ERROR(_logger, "[ShaderRenderer] Failed to compile vertex shader");
+		return;
+	}
+
+	_device->CreateVertexShader(compiledShader, compiledShader->GetBufferSize(), nullptr, &_vertexShader);
 }

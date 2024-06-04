@@ -190,7 +190,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 4b3f493bf72f7314a92241c5702183ec, type: 2}
+  - {fileID: 2100000, guid: 5ff829a7203441a4faf965da9864e073, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -247,6 +247,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: be3c95599c85476ca59a6522b1cb1527, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _fragmentShaderCode: "float4 Frag() : SV_TARGET\r\n{\r\n\treturn float4(1.0, 0.0,
+    0.0, 1.0);\r\n}"
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0

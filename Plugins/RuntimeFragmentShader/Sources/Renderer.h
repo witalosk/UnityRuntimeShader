@@ -6,6 +6,9 @@
 #include <d3dcompiler.h>
 #include <string>
 
+#pragma comment(lib, "d3d11.lib")
+#pragma comment(lib, "d3dcompiler.lib")
+
 #include "Unity/IUnityInterface.h"
 #include "Unity/IUnityGraphics.h"
 #include "Unity/IUnityGraphicsD3D11.h"
@@ -42,9 +45,14 @@ private:
 public:
 	Renderer(IUnityInterfaces* unity);
 	~Renderer();
-	void Start();
 	void Update();
-	void Stop();
 	void SetTexturePtr(void* ptr, int format);
 	void CreateResources();
+	void CompilePixelShaderFromString(const std::string& source);
+
+private:
+	void Start();
+	void Stop();
+	void CompileVertexShader();
+	
 };
