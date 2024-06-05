@@ -6,7 +6,7 @@ namespace RuntimeFragmentShader.Sample
     [RequireComponent(typeof(ShaderRenderer))]
     public class SampleRenderer : MonoBehaviour
     {
-        [SerializeField, TextArea]
+        [SerializeField, TextArea(10, 20)]
         private string _fragmentShaderCode = @"float4 Frag() : SV_TARGET
 {
 	return float4(1.0, 0.0, 0.0, 1.0);

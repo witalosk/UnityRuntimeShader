@@ -247,8 +247,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: be3c95599c85476ca59a6522b1cb1527, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _fragmentShaderCode: "float4 Frag() : SV_TARGET\r\n{\r\n\treturn float4(1.0, 0.0,
-    0.0, 1.0);\r\n}"
+  _fragmentShaderCode: "float4 Frag(float4 pos : SV_POSITION) : SV_TARGET\r\n{\r\n\treturn
+    float4(pos.xy/256, 0.0, 1.0);\r\n}"
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0

@@ -36,8 +36,10 @@ void Renderer::Start()
 	HRESULT hr = _device->CreateInputLayout(_dx11InputElementDesc, 1, compiledVs->GetBufferPointer(), compiledVs->GetBufferSize(), &_inputLayout);
 	if (FAILED(hr))
 	{
-		UNITY_LOG(_logger, "[ShaderRenderer] Failed to create input layout");
+		UNITY_LOG_ERROR(_logger, "[ShaderRenderer] Failed to create input layout");
 	}
+	UNITY_LOG(_logger, "[ShaderRenderer] Succeeded to create input layout");
+
 	
 	UNITY_LOG(_logger, "[ShaderRenderer] Started");
 }
@@ -64,19 +66,16 @@ void Renderer::Update()
 	FLOAT backgroundColor[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
 	context->ClearRenderTargetView(_frameBufferView, backgroundColor);
 
-	// context->OMSetDepthStencilState(_depthState, 0);
-	// context->RSSetState(_rasterState);
-	// context->OMSetBlendState(_blendState, nullptr, 0xFFFFFFFF);
+	context->OMSetDepthStencilState(_depthState, 0);
+	context->RSSetState(_rasterState);
+	context->OMSetBlendState(_blendState, nullptr, 0xFFFFFFFF);
 	
 	// Update constant buffer - just the world matrix in our case
 	// context->UpdateSubresource(_constantBuffer, 0, nullptr, worldMatrix, 64, 0);
 	// context->VSSetConstantBuffers(0, 1, &m_CB);
 
-	// Set shaders
-	context->VSSetShader(_vertexShader, nullptr, 0);
-	context->PSSetShader(_pixelShader, nullptr, 0);
-
-
+	const D3D11_VIEWPORT* vp = new D3D11_VIEWPORT{0.0f, 0.0f, 256.0f, 256.0f, 0.0f, 1.0f};
+	context->RSSetViewports(1, vp);
 
 	
 	// const int kVertexSize = 12 + 4;
@@ -88,25 +87,29 @@ void Renderer::Update()
 	UINT stride = 4 * sizeof(float);
 	UINT offset = 0;
 	context->IASetVertexBuffers(0, 1, &_vertexBuffer, &stride, &offset);
+
+	// Set shaders
+	context->VSSetShader(_vertexShader, nullptr, 0);
+	context->PSSetShader(_pixelShader, nullptr, 0);
+	
 	context->Draw(2 * 3, 0);
 
 	context->Release();
 
-	UNITY_LOG(_logger, "[ShaderRenderer] Rendered frame");
 	_renderCount++;
 }
 
 void Renderer::Stop()
 {
 	SAFE_RELEASE(_frameBufferView);
-	// SAFE_RELEASE(_vertexBuffer);
+	SAFE_RELEASE(_vertexBuffer);
 	// SAFE_RELEASE(_constantBuffer);
-	// SAFE_RELEASE(_vertexShader);
-	// SAFE_RELEASE(_pixelShader);
-	// SAFE_RELEASE(_inputLayout);
-	// SAFE_RELEASE(_rasterState);
-	// SAFE_RELEASE(_blendState);
-	// SAFE_RELEASE(_depthState);
+	SAFE_RELEASE(_vertexShader);
+	SAFE_RELEASE(_pixelShader);
+	SAFE_RELEASE(_inputLayout);
+	SAFE_RELEASE(_rasterState);
+	SAFE_RELEASE(_blendState);
+	SAFE_RELEASE(_depthState);
 	_isRunning = false;
 	
 	UNITY_LOG(_logger, "[ShaderRenderer] Stopped");
@@ -129,27 +132,33 @@ void Renderer::SetTexturePtr(void* ptr, int format)
 
 void Renderer::CreateResources()
 {
-	D3D11_BUFFER_DESC desc;
-	memset(&desc, 0, sizeof(desc));
+	// D3D11_BUFFER_DESC desc;
+	// memset(&desc, 0, sizeof(desc));
 
 	// Update vertex buffer
 	float vertexData[] = { // x, y, u, v
-		-0.5f,  0.5f, 0.f, 0.f,
-		0.5f, -0.5f, 1.f, 1.f,
-		-0.5f, -0.5f, 0.f, 1.f,
-		-0.5f,  0.5f, 0.f, 0.f,
-		0.5f,  0.5f, 1.f, 0.f,
-		0.5f, -0.5f, 1.f, 1.f
+		-1.,  1., 0.f, 0.f,
+		1., -1., 1.f, 1.f,
+		-1., -1., 0.f, 1.f,
+		-1.,  1., 0.f, 0.f,
+		1.,  1., 1.f, 0.f,
+		1., -1., 1.f, 1.f
 	};
-	
-	D3D11_SUBRESOURCE_DATA vertexSubresourceData = { vertexData };
 
-	// vertex buffer
-	desc.Usage = D3D11_USAGE_IMMUTABLE;
+	_vertexBuffer = nullptr;
+	D3D11_BUFFER_DESC desc = {};
 	desc.ByteWidth = sizeof(vertexData);
+	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	_device->CreateBuffer(&desc, &vertexSubresourceData, &_vertexBuffer);
-
+	
+	D3D11_SUBRESOURCE_DATA sr = { 0 };
+	sr.pSysMem = vertexData;
+	HRESULT hr = _device->CreateBuffer(&desc, &sr, &_vertexBuffer);
+	if (FAILED(hr))
+	{
+		UNITY_LOG_ERROR(_logger, "[ShaderRenderer] Failed to create vertex buffer");
+	}
+	
 	// constant buffer
 	// desc.Usage = D3D11_USAGE_DEFAULT;
 	// desc.ByteWidth = 64; // hold 1 matrix
@@ -158,14 +167,17 @@ void Renderer::CreateResources()
 	// _device->CreateBuffer(&desc, NULL, &_constantBuffer);
 	//
 
-
 	// render states
 	D3D11_RASTERIZER_DESC rsdesc;
 	memset(&rsdesc, 0, sizeof(rsdesc));
 	rsdesc.FillMode = D3D11_FILL_SOLID;
 	rsdesc.CullMode = D3D11_CULL_NONE;
 	rsdesc.DepthClipEnable = TRUE;
-	_device->CreateRasterizerState(&rsdesc, &_rasterState);
+	hr = _device->CreateRasterizerState(&rsdesc, &_rasterState);
+	if (FAILED(hr))
+	{
+		UNITY_LOG_ERROR(_logger, "[ShaderRenderer] Failed to create rasterizer state");
+	}
 
 	D3D11_DEPTH_STENCIL_DESC dsdesc;
 	memset(&dsdesc, 0, sizeof(dsdesc));
@@ -173,13 +185,21 @@ void Renderer::CreateResources()
 	dsdesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
 	// dsdesc.DepthFunc = GetUsesReverseZ() ? D3D11_COMPARISON_GREATER_EQUAL : D3D11_COMPARISON_LESS_EQUAL;
 	dsdesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
-	_device->CreateDepthStencilState(&dsdesc, &_depthState);
+	hr = _device->CreateDepthStencilState(&dsdesc, &_depthState);
+	if (FAILED(hr))
+	{
+		UNITY_LOG_ERROR(_logger, "[ShaderRenderer] Failed to create depth stencil state");
+	}
 
 	D3D11_BLEND_DESC bdesc;
 	memset(&bdesc, 0, sizeof(bdesc));
 	bdesc.RenderTarget[0].BlendEnable = FALSE;
 	bdesc.RenderTarget[0].RenderTargetWriteMask = 0xF;
-	_device->CreateBlendState(&bdesc, &_blendState);
+	hr = _device->CreateBlendState(&bdesc, &_blendState);
+	if (FAILED(hr))
+	{
+		UNITY_LOG_ERROR(_logger, "[ShaderRenderer] Failed to create blend state");
+	}
 }
 
 void Renderer::CompilePixelShaderFromString(const std::string& source)
