@@ -46,16 +46,6 @@ void Renderer::Start()
 
 void Renderer::Update()
 {
-	// if (_pixelShader == nullptr)
-	// {
-	// 	UNITY_LOG(_logger, "[ShaderRenderer] Pixel shader not set");
-	// }
-	//
-	// if (_texture == nullptr)
-	// {
-	// 	UNITY_LOG(_logger, "[ShaderRenderer] Texture not set");
-	// }
-	
 	if (!_isRunning || _pixelShader == nullptr || _unity == nullptr || _texture == nullptr) return;
 	
 	ID3D11DeviceContext* context;
@@ -70,17 +60,16 @@ void Renderer::Update()
 	context->RSSetState(_rasterState);
 	context->OMSetBlendState(_blendState, nullptr, 0xFFFFFFFF);
 	
-	// Update constant buffer - just the world matrix in our case
-	// context->UpdateSubresource(_constantBuffer, 0, nullptr, worldMatrix, 64, 0);
-	// context->VSSetConstantBuffers(0, 1, &m_CB);
+	// Update constant buffer
+	if (_constantBufferSize > 0 && _constantBuffer != nullptr)
+	{
+		context->UpdateSubresource(_constantBuffer, 0, nullptr, _constantBufferPtr, 0, 0);
+		context->PSSetConstantBuffers(0, 1, &_constantBuffer);
+	}
 
-	const D3D11_VIEWPORT* vp = new D3D11_VIEWPORT{0.0f, 0.0f, 256.0f, 256.0f, 0.0f, 1.0f};
+	const D3D11_VIEWPORT* vp = new D3D11_VIEWPORT{0.0f, 0.0f, static_cast<float>(_width), static_cast<float>(_height), 0.0f, 1.0f};
 	context->RSSetViewports(1, vp);
-
 	
-	// const int kVertexSize = 12 + 4;
-	// context->UpdateSubresource(_vertexBuffer, 0, nullptr, verticesFloat3Byte4, triangleCount * 3 * kVertexSize, 0);
-
 	// set input assembler data and draw
 	context->IASetInputLayout(_inputLayout);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -93,7 +82,6 @@ void Renderer::Update()
 	context->PSSetShader(_pixelShader, nullptr, 0);
 	
 	context->Draw(2 * 3, 0);
-
 	context->Release();
 
 	_renderCount++;
@@ -103,7 +91,7 @@ void Renderer::Stop()
 {
 	SAFE_RELEASE(_frameBufferView);
 	SAFE_RELEASE(_vertexBuffer);
-	// SAFE_RELEASE(_constantBuffer);
+	SAFE_RELEASE(_constantBuffer);
 	SAFE_RELEASE(_vertexShader);
 	SAFE_RELEASE(_pixelShader);
 	SAFE_RELEASE(_inputLayout);
@@ -116,11 +104,11 @@ void Renderer::Stop()
 
 }
 
-
-
-void Renderer::SetTexturePtr(void* ptr, int format)
+void Renderer::SetTexture(void* ptr, int width, int height, int format)
 {
 	_texture = static_cast<ID3D11Texture2D*>(ptr);
+	_width = width;
+	_height = height;
 
 	if (_frameBufferView != nullptr)
 	{
@@ -130,13 +118,40 @@ void Renderer::SetTexturePtr(void* ptr, int format)
 	_device->CreateRenderTargetView(_texture, new CD3D11_RENDER_TARGET_VIEW_DESC(D3D11_RTV_DIMENSION_TEXTURE2D, static_cast<DXGI_FORMAT>(format)), &_frameBufferView);
 }
 
+void Renderer::SetConstantBuffer(void* buffer, int size)
+{
+	if (size == 0) return;
+	if (size == _constantBufferSize) return;
+	_constantBufferPtr = buffer;
+	
+	if (_constantBuffer != nullptr)
+	{
+		_constantBuffer->Release();
+		_constantBuffer = nullptr;
+	}
+	
+	D3D11_SUBRESOURCE_DATA sr = { 0 };
+	sr.pSysMem = buffer;
+	
+	D3D11_BUFFER_DESC desc = {};
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.ByteWidth = size + (size % 16 == 0 ? 0 : 16 - size % 16);
+	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	desc.CPUAccessFlags = 0;
+	HRESULT hr = _device->CreateBuffer(&desc, &sr, &_constantBuffer);
+	if (FAILED(hr))
+	{
+		UNITY_LOG_ERROR(_logger, "[ShaderRenderer] Failed to create constant buffer");
+	}
+
+	_constantBufferSize = size;
+	UNITY_LOG(_logger, "[ShaderRenderer] Succeeded to create constant buffer");
+}
+
 void Renderer::CreateResources()
 {
-	// D3D11_BUFFER_DESC desc;
-	// memset(&desc, 0, sizeof(desc));
-
-	// Update vertex buffer
-	float vertexData[] = { // x, y, u, v
+	// x, y, u, v
+	float vertexData[] = {
 		-1.,  1., 0.f, 0.f,
 		1., -1., 1.f, 1.f,
 		-1., -1., 0.f, 1.f,
@@ -158,14 +173,6 @@ void Renderer::CreateResources()
 	{
 		UNITY_LOG_ERROR(_logger, "[ShaderRenderer] Failed to create vertex buffer");
 	}
-	
-	// constant buffer
-	// desc.Usage = D3D11_USAGE_DEFAULT;
-	// desc.ByteWidth = 64; // hold 1 matrix
-	// desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	// desc.CPUAccessFlags = 0;
-	// _device->CreateBuffer(&desc, NULL, &_constantBuffer);
-	//
 
 	// render states
 	D3D11_RASTERIZER_DESC rsdesc;
@@ -230,7 +237,9 @@ void Renderer::CompilePixelShaderFromString(const std::string& source)
 
 ID3DBlob* Renderer::CompileVertexShader()
 {
-	std::string vs = "float4 Vert( float4 pos : POSITION ) : SV_POSITION { return float4(pos.xy, 0.0, 1.0); }";
+	std::string vs =
+		"struct VsOutput { float4 pos : SV_POSITION; float2 uv : TEXCOORD0; };"
+		"VsOutput Vert( float4 pos : POSITION ) { VsOutput vsOut = (VsOutput)0; vsOut.pos = float4(pos.xy, 0, 1); vsOut.uv = pos.zw; return vsOut; }";
 
 	ID3DBlob* compiledShader;
 	HRESULT hr = D3DCompile(vs.c_str(), vs.size(), nullptr, nullptr, nullptr, "Vert", "vs_4_0", 0, 0, &compiledShader, nullptr);
@@ -249,6 +258,8 @@ ID3DBlob* Renderer::CompileVertexShader()
 	}
 
 	UNITY_LOG(_logger, "[ShaderRenderer] Succeeded to compile vertex shader");
+
+	// constant buffer: https://tositeru.github.io/ImasaraDX11/part/constant-buffer
 
 	return compiledShader;
 }

@@ -31,10 +31,16 @@ extern "C"
 		return OnRenderEvent;
 	}
 
-	UNITY_INTERFACE_EXPORT void UNITY_INTERFACE_API SetTexturePtr(void* ptr, void* texture, int format)
+	UNITY_INTERFACE_EXPORT void UNITY_INTERFACE_API SetTexturePtr(void* ptr, void* texture, int width, int height, int format)
 	{
 		auto renderer = reinterpret_cast<Renderer*>(ptr);
-		renderer->SetTexturePtr(texture, format);
+		renderer->SetTexture(texture, width, height, format);
+	}
+
+	UNITY_INTERFACE_EXPORT void UNITY_INTERFACE_API SetConstantBuffer(void* ptr, void* buffer, int size)
+	{
+		auto renderer = reinterpret_cast<Renderer*>(ptr);
+		renderer->SetConstantBuffer(buffer, size);
 	}
 
 	UNITY_INTERFACE_EXPORT void* UNITY_INTERFACE_API CreateRenderer()

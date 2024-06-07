@@ -8,10 +8,13 @@ namespace RuntimeFragmentShader
     public class ShaderRenderer : MonoBehaviour
     {
         public RenderTexture TargetTexture { get => _targetTexture; set => ChangeTargetTexture(value); }
-        
-        private IntPtr _instancePtr = IntPtr.Zero;
+
         private RenderTexture _targetTexture;
         private bool _isDestroyed = false;
+
+        private IntPtr _instancePtr = IntPtr.Zero;
+        private IntPtr _constantBufferPtr = IntPtr.Zero;
+        private int _constantBufferSize = 0;
 
         private void Awake()
         {
@@ -29,13 +32,33 @@ namespace RuntimeFragmentShader
         {
             _isDestroyed = true;
             Plugin.ReleaseRenderer(_instancePtr);
+
+            if (_constantBufferPtr != IntPtr.Zero || _constantBufferSize != 0)
+            {
+                Marshal.FreeHGlobal(_constantBufferPtr);
+            }
         }
         
         public void CompilePixelShaderFromString(string shaderCode)
         {
-            Plugin.CompilePixelShaderFromString(_instancePtr, Marshal.StringToHGlobalAnsi(shaderCode));
+            Plugin.CompilePixelShaderFromString(_instancePtr, Marshal.StringToHGlobalAnsi($"struct VsOutput {{ float4 pos : SV_POSITION; float2 uv : TEXCOORD0; }}; {shaderCode}"));
         }
-
+        
+        public void SetConstantBuffer<T>(T buffer) where T : struct
+        {
+            if (_constantBufferPtr == IntPtr.Zero || _constantBufferSize != Marshal.SizeOf<T>())
+            {
+                if (_constantBufferPtr != IntPtr.Zero)
+                {
+                    Marshal.FreeHGlobal(_constantBufferPtr);
+                }
+                _constantBufferPtr = Marshal.AllocHGlobal(Marshal.SizeOf<T>());
+                _constantBufferSize = Marshal.SizeOf<T>();
+                Plugin.SetConstantBuffer(_instancePtr, _constantBufferPtr, Marshal.SizeOf<T>());
+            }
+            Marshal.StructureToPtr(buffer, _constantBufferPtr, _constantBufferSize > 0);
+        }
+        
         IEnumerator OnRender()
         {
             while (!_isDestroyed)
@@ -58,7 +81,7 @@ namespace RuntimeFragmentShader
                 _targetTexture.Create();
             }
             
-            Plugin.SetTexturePtr(_instancePtr, _targetTexture.GetNativeTexturePtr(), (int)_targetTexture.format.GetDxgiFormat());
+            Plugin.SetTexturePtr(_instancePtr, _targetTexture.GetNativeTexturePtr(), _targetTexture.width, _targetTexture.height, (int)_targetTexture.format.GetDxgiFormat());
         }
         
     }

@@ -41,12 +41,18 @@ private:
 	std::mutex _mutex;
 	bool _isRunning = false;
 	int _renderCount = 0;
+	int _width;
+	int _height;
+	void* _constantBufferPtr;
+	int _constantBufferSize;
+	
 
 public:
 	Renderer(IUnityInterfaces* unity);
 	~Renderer();
 	void Update();
-	void SetTexturePtr(void* ptr, int format);
+	void SetTexture(void* ptr, int width, int height, int format);
+	void SetConstantBuffer(void* buffer, int size);
 	void CreateResources();
 	void CompilePixelShaderFromString(const std::string& source);
 
