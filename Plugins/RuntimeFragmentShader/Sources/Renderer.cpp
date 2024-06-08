@@ -209,15 +209,27 @@ void Renderer::CreateResources()
 	}
 }
 
-void Renderer::CompilePixelShaderFromString(const std::string& source)
+std::string Renderer::CompilePixelShaderFromString(const std::string& source)
 {
 	ID3DBlob* compiledShader;
-	HRESULT hr = D3DCompile(source.c_str(), source.size(), nullptr, nullptr, nullptr, "Frag", "ps_4_0", 0, 0, &compiledShader, nullptr);
+	ID3DBlob* errorMessage;
+	HRESULT hr = D3DCompile(source.c_str(), source.size(), nullptr, nullptr, nullptr, "Frag", "ps_4_0", 0, 0, &compiledShader, &errorMessage);
 	if (FAILED(hr))
 	{
 		UNITY_LOG_ERROR(_logger, "[ShaderRenderer] Failed to compile pixel shader");
-		UNITY_LOG(_logger, source.c_str());
-		return;
+
+		if (errorMessage)
+		{
+			LPVOID errMsg = errorMessage->GetBufferPointer();
+			size_t errMsgSize = errorMessage->GetBufferSize();
+
+			std::string strErrMsg(static_cast<const char*>(errMsg), errMsgSize);
+			errorMessage->Release();
+			
+			return strErrMsg;
+		}
+
+		return "Unknown compile error";
 	}
 
 	hr = _device->CreatePixelShader(compiledShader->GetBufferPointer(), compiledShader->GetBufferSize(), nullptr, &_pixelShader);
@@ -226,13 +238,12 @@ void Renderer::CompilePixelShaderFromString(const std::string& source)
 	{
 		UNITY_LOG_ERROR(_logger, "[ShaderRenderer] Failed to compile pixel shader");
 		UNITY_LOG(_logger, std::to_string(hr).c_str());
-		return;
+		return "Failed to compile fragment shader";
 	}
 	
 	UNITY_LOG(_logger, "[ShaderRenderer] Succeeded to compile fragment shader");
-	UNITY_LOG(_logger, source.c_str());
 
-
+	return "";
 }
 
 ID3DBlob* Renderer::CompileVertexShader()
@@ -246,7 +257,6 @@ ID3DBlob* Renderer::CompileVertexShader()
 	if (FAILED(hr))
 	{
 		UNITY_LOG_ERROR(_logger, "[ShaderRenderer] Failed to compile vertex shader");
-		UNITY_LOG(_logger, vs.c_str());
 		return nullptr;
 	}
 
@@ -258,8 +268,6 @@ ID3DBlob* Renderer::CompileVertexShader()
 	}
 
 	UNITY_LOG(_logger, "[ShaderRenderer] Succeeded to compile vertex shader");
-
-	// constant buffer: https://tositeru.github.io/ImasaraDX11/part/constant-buffer
-
+	
 	return compiledShader;
 }

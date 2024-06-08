@@ -7,6 +7,7 @@ namespace RuntimeFragmentShader
 {
     public class ShaderRenderer : MonoBehaviour
     {
+        public bool RenderEveryFrame { get; set; } = true;
         public RenderTexture TargetTexture { get => _targetTexture; set => ChangeTargetTexture(value); }
 
         private RenderTexture _targetTexture;
@@ -39,9 +40,18 @@ namespace RuntimeFragmentShader
             }
         }
         
-        public void CompilePixelShaderFromString(string shaderCode)
+        public bool CompilePixelShaderFromString(string shaderCode, out string error)
         {
-            Plugin.CompilePixelShaderFromString(_instancePtr, Marshal.StringToHGlobalAnsi($"struct VsOutput {{ float4 pos : SV_POSITION; float2 uv : TEXCOORD0; }}; {shaderCode}"));
+            IntPtr result = Plugin.CompilePixelShaderFromString(_instancePtr, Marshal.StringToHGlobalAnsi($"struct VsOutput {{ float4 pos : SV_POSITION; float2 uv : TEXCOORD0; }}; {shaderCode}"));
+            string resultString = Marshal.PtrToStringAnsi(result);
+            if (!string.IsNullOrEmpty(resultString))
+            {
+                error = resultString;
+                return false;
+            }
+
+            error = null;
+            return true;
         }
         
         public void SetConstantBuffer<T>(T buffer) where T : struct
@@ -65,7 +75,7 @@ namespace RuntimeFragmentShader
             {
                 yield return new WaitForEndOfFrame();
                 
-                if (!isActiveAndEnabled || _targetTexture == null) continue;
+                if (!isActiveAndEnabled || !RenderEveryFrame || _targetTexture == null) continue;
                 GL.IssuePluginEvent(Plugin.GetRenderEventFunc(), 1);
             }
 

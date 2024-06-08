@@ -56,10 +56,12 @@ extern "C"
 		delete renderer;
 	}
 
-	UNITY_INTERFACE_EXPORT void UNITY_INTERFACE_API CompilePixelShaderFromString(void* ptr, const char* source)
+	UNITY_INTERFACE_EXPORT const char* UNITY_INTERFACE_API CompilePixelShaderFromString(void* ptr, const char* source)
 	{
 		auto renderer = reinterpret_cast<Renderer*>(ptr);
-		renderer->CompilePixelShaderFromString(source);
+		const char* result;
+		result = renderer->CompilePixelShaderFromString(source).c_str();
+		return result;
 	}
 
 }

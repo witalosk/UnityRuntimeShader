@@ -54,7 +54,7 @@ public:
 	void SetTexture(void* ptr, int width, int height, int format);
 	void SetConstantBuffer(void* buffer, int size);
 	void CreateResources();
-	void CompilePixelShaderFromString(const std::string& source);
+	std::string CompilePixelShaderFromString(const std::string& source);
 
 private:
 	void Start();

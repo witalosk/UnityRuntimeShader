@@ -40,7 +40,7 @@ namespace RuntimeFragmentShader.Sample
             _targetTexture = new RenderTexture(_textureSize.x, _textureSize.y, 0, RenderTextureFormat.ARGBFloat);
             
             _shaderRenderer.TargetTexture = _targetTexture;
-            _shaderRenderer.CompilePixelShaderFromString(_fragmentShaderCode);
+            CompilePixelShader();
 
             GetComponent<Renderer>().material.mainTexture = _targetTexture;
         }
@@ -49,7 +49,7 @@ namespace RuntimeFragmentShader.Sample
         {
             if (_startCompile)
             {
-                _shaderRenderer.CompilePixelShaderFromString(_fragmentShaderCode);
+                CompilePixelShader();
                 _startCompile = false;
             }
             
@@ -64,7 +64,14 @@ namespace RuntimeFragmentShader.Sample
         
         public void CompilePixelShader()
         {
-            _shaderRenderer.CompilePixelShaderFromString(_fragmentShaderCode);
+            if (_shaderRenderer.CompilePixelShaderFromString(_fragmentShaderCode, out string error))
+            {
+                Debug.Log("Shader compiled successfully.");
+            }
+            else
+            {
+                Debug.LogError($"Shader compilation failed: {error}");
+            }
         }
     }
 }
