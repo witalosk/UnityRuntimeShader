@@ -213,7 +213,7 @@ std::string Renderer::CompilePixelShaderFromString(const std::string& source)
 {
 	ID3DBlob* compiledShader;
 	ID3DBlob* errorMessage;
-	HRESULT hr = D3DCompile(source.c_str(), source.size(), nullptr, nullptr, nullptr, "Frag", "ps_4_0", 0, 0, &compiledShader, &errorMessage);
+	HRESULT hr = D3DCompile(source.c_str(), source.size(), nullptr, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "Frag", "ps_4_0", 0, 0, &compiledShader, &errorMessage);
 	if (FAILED(hr))
 	{
 		UNITY_LOG_ERROR(_logger, "[ShaderRenderer] Failed to compile pixel shader");

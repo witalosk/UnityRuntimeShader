@@ -9,6 +9,8 @@
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3dcompiler.lib")
 
+#include <vector>
+
 #include "Unity/IUnityInterface.h"
 #include "Unity/IUnityGraphics.h"
 #include "Unity/IUnityGraphicsD3D11.h"
@@ -37,6 +39,8 @@ private:
 	ID3D11BlendState* _blendState;
 	ID3D11DepthStencilState* _depthState;
 
+	std::vector<ID3D11ShaderResourceView*> _shaderResourceViews;
+
 	std::thread _thread;
 	std::mutex _mutex;
 	bool _isRunning = false;
@@ -55,6 +59,7 @@ public:
 	void SetConstantBuffer(void* buffer, int size);
 	void CreateResources();
 	std::string CompilePixelShaderFromString(const std::string& source);
+	void AddTexture(ID3D11ShaderResourceView* srv);
 
 private:
 	void Start();

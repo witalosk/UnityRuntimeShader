@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
+using System.IO;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace RuntimeFragmentShader
@@ -21,7 +23,7 @@ namespace RuntimeFragmentShader
 	return float4(input.uv, 1.0 - uv.x, 1.0);
 }";
         
-        private int _instanceId = 0;
+        private int _instanceId = -1;
         private IntPtr _constantBufferPtr = IntPtr.Zero;
         private int _constantBufferSize = 0;
         private bool _isDestroyed = false;
@@ -56,7 +58,23 @@ namespace RuntimeFragmentShader
         
         public bool CompileFragmentShader(out string error)
         {
-            IntPtr result = Plugin.CompilePixelShaderFromString(_instanceId, Marshal.StringToHGlobalAnsi($"struct VsOutput {{ float4 pos : SV_POSITION; float2 uv : TEXCOORD0; }}; {_fragmentShaderCode}"));
+            if (_instanceId < 0)
+            {
+                error = "[ShaderRenderer] Instance is not created.";
+                return false;
+            }
+            
+            // replace #include
+            string shaderCode = _fragmentShaderCode;
+            var includeMatches = Regex.Matches(shaderCode, @"^(?!//)#include ""([^""]+)""");
+            foreach (Match match in includeMatches)
+            {
+                string includeFileName = match.Groups[1].Value;
+                string includeStr = File.ReadAllText($"{Application.streamingAssetsPath}/{includeFileName}");
+                shaderCode = shaderCode.Replace($"#include \"{includeFileName}\"", includeStr);
+            }
+            
+            IntPtr result = Plugin.CompilePixelShaderFromString(_instanceId, Marshal.StringToHGlobalAnsi($"struct VsOutput {{ float4 pos : SV_POSITION; float2 uv : TEXCOORD0; }}; {shaderCode}"));
             string resultString = Marshal.PtrToStringAnsi(result);
             if (!string.IsNullOrEmpty(resultString))
             {
@@ -76,6 +94,7 @@ namespace RuntimeFragmentShader
         
         public void SetConstantBuffer<T>(T buffer) where T : struct
         {
+            if (_instanceId < 0) return;
             if (_constantBufferPtr == IntPtr.Zero || _constantBufferSize != Marshal.SizeOf<T>())
             {
                 if (_constantBufferPtr != IntPtr.Zero)
@@ -91,6 +110,7 @@ namespace RuntimeFragmentShader
 
         public void BlitNow()
         {
+            if (_instanceId < 0) return;
             Plugin.Render(_instanceId);
         }
         
@@ -109,6 +129,7 @@ namespace RuntimeFragmentShader
         
         private void ChangeTargetTexture(RenderTexture texture)
         {
+            if (_instanceId < 0) return;
             _targetTexture = texture;
             
             if (!_targetTexture.IsCreated())
