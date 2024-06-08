@@ -11,19 +11,9 @@ namespace RuntimeFragmentShader.Sample
     [RequireComponent(typeof(ShaderRenderer))]
     public class SampleRenderer : MonoBehaviour
     {
-        public string FragmentShaderCode { get => _fragmentShaderCode; set => _fragmentShaderCode = value; }
+        public string FragmentShaderCode => _shaderRenderer.FragmentShaderCode;
         
-        [SerializeField]
-        private Vector2Int _textureSize = new Vector2Int(256, 256);
-        
-        [SerializeField, TextArea(10, 20)]
-        private string _fragmentShaderCode = @"float4 Frag(VsOutput input) : SV_TARGET
-{
-	return float4(input.uv, 0.0, 1.0);
-}";
-        
-        [SerializeField]
-        private bool _startCompile = false;
+        [SerializeField] private Vector2Int _textureSize = new(256, 256);
         
         private SampleConstantBuffer _constantBuffer;
         private RenderTexture _targetTexture;
@@ -38,21 +28,13 @@ namespace RuntimeFragmentShader.Sample
                 return;
             }
             _targetTexture = new RenderTexture(_textureSize.x, _textureSize.y, 0, RenderTextureFormat.ARGBFloat);
-            
             _shaderRenderer.TargetTexture = _targetTexture;
-            CompilePixelShader();
 
             GetComponent<Renderer>().material.mainTexture = _targetTexture;
         }
 
         private void Update()
         {
-            if (_startCompile)
-            {
-                CompilePixelShader();
-                _startCompile = false;
-            }
-            
             _constantBuffer.Time = Time.time;
             _shaderRenderer.SetConstantBuffer(_constantBuffer);
         }
@@ -62,15 +44,11 @@ namespace RuntimeFragmentShader.Sample
             Destroy(_targetTexture);
         }
         
-        public void CompilePixelShader()
+        public void CompileFragmentShader(string fragmentShaderCode)
         {
-            if (_shaderRenderer.CompilePixelShaderFromString(_fragmentShaderCode, out string error))
+            if (_shaderRenderer.CompileFragmentShaderFromString(fragmentShaderCode, out string error))
             {
-                Debug.Log("Shader compiled successfully.");
-            }
-            else
-            {
-                Debug.LogError($"Shader compilation failed: {error}");
+                Debug.LogError(error);
             }
         }
     }

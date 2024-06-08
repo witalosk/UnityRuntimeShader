@@ -9,19 +9,31 @@ namespace RuntimeFragmentShader
     {
         public bool RenderEveryFrame { get => _renderEveryFrame; set => _renderEveryFrame = value; }
         public RenderTexture TargetTexture { get => _targetTexture; set => ChangeTargetTexture(value); }
+        public string FragmentShaderCode => _fragmentShaderCode;
 
+        [SerializeField] private RenderTexture _targetTexture;
         [SerializeField] private bool _renderEveryFrame = true;
         
-        private RenderTexture _targetTexture;
-        private bool _isDestroyed = false;
-
+        [Space]
+        [SerializeField, TextArea(10, 20)]
+        private string _fragmentShaderCode = @"float4 Frag(VsOutput input) : SV_TARGET
+{
+	return float4(input.uv, 1.0 - uv.x, 1.0);
+}";
+        
         private int _instanceId = 0;
         private IntPtr _constantBufferPtr = IntPtr.Zero;
         private int _constantBufferSize = 0;
+        private bool _isDestroyed = false;
 
         private void Awake()
         {
             _instanceId = Plugin.CreateRenderer();
+            
+            if (!CompileFragmentShader(out string error))
+            {
+                Debug.LogError(error);
+            }
             
             if (_targetTexture != null)
             {
@@ -42,9 +54,9 @@ namespace RuntimeFragmentShader
             }
         }
         
-        public bool CompilePixelShaderFromString(string shaderCode, out string error)
+        public bool CompileFragmentShader(out string error)
         {
-            IntPtr result = Plugin.CompilePixelShaderFromString(_instanceId, Marshal.StringToHGlobalAnsi($"struct VsOutput {{ float4 pos : SV_POSITION; float2 uv : TEXCOORD0; }}; {shaderCode}"));
+            IntPtr result = Plugin.CompilePixelShaderFromString(_instanceId, Marshal.StringToHGlobalAnsi($"struct VsOutput {{ float4 pos : SV_POSITION; float2 uv : TEXCOORD0; }}; {_fragmentShaderCode}"));
             string resultString = Marshal.PtrToStringAnsi(result);
             if (!string.IsNullOrEmpty(resultString))
             {
@@ -54,6 +66,12 @@ namespace RuntimeFragmentShader
 
             error = null;
             return true;
+        }
+        
+        public bool CompileFragmentShaderFromString(string shaderCode, out string error)
+        {
+            _fragmentShaderCode = shaderCode;
+            return CompileFragmentShader(out error);
         }
         
         public void SetConstantBuffer<T>(T buffer) where T : struct
