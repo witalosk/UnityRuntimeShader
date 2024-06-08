@@ -7,19 +7,21 @@ namespace RuntimeFragmentShader
 {
     public class ShaderRenderer : MonoBehaviour
     {
-        public bool RenderEveryFrame { get; set; } = true;
+        public bool RenderEveryFrame { get => _renderEveryFrame; set => _renderEveryFrame = value; }
         public RenderTexture TargetTexture { get => _targetTexture; set => ChangeTargetTexture(value); }
 
+        [SerializeField] private bool _renderEveryFrame = true;
+        
         private RenderTexture _targetTexture;
         private bool _isDestroyed = false;
 
-        private IntPtr _instancePtr = IntPtr.Zero;
+        private int _instanceId = 0;
         private IntPtr _constantBufferPtr = IntPtr.Zero;
         private int _constantBufferSize = 0;
 
         private void Awake()
         {
-            _instancePtr = Plugin.CreateRenderer();
+            _instanceId = Plugin.CreateRenderer();
             
             if (_targetTexture != null)
             {
@@ -32,7 +34,7 @@ namespace RuntimeFragmentShader
         private void OnDestroy()
         {
             _isDestroyed = true;
-            Plugin.ReleaseRenderer(_instancePtr);
+            Plugin.ReleaseRenderer(_instanceId);
 
             if (_constantBufferPtr != IntPtr.Zero || _constantBufferSize != 0)
             {
@@ -42,7 +44,7 @@ namespace RuntimeFragmentShader
         
         public bool CompilePixelShaderFromString(string shaderCode, out string error)
         {
-            IntPtr result = Plugin.CompilePixelShaderFromString(_instancePtr, Marshal.StringToHGlobalAnsi($"struct VsOutput {{ float4 pos : SV_POSITION; float2 uv : TEXCOORD0; }}; {shaderCode}"));
+            IntPtr result = Plugin.CompilePixelShaderFromString(_instanceId, Marshal.StringToHGlobalAnsi($"struct VsOutput {{ float4 pos : SV_POSITION; float2 uv : TEXCOORD0; }}; {shaderCode}"));
             string resultString = Marshal.PtrToStringAnsi(result);
             if (!string.IsNullOrEmpty(resultString))
             {
@@ -64,19 +66,24 @@ namespace RuntimeFragmentShader
                 }
                 _constantBufferPtr = Marshal.AllocHGlobal(Marshal.SizeOf<T>());
                 _constantBufferSize = Marshal.SizeOf<T>();
-                Plugin.SetConstantBuffer(_instancePtr, _constantBufferPtr, Marshal.SizeOf<T>());
+                Plugin.SetConstantBuffer(_instanceId, _constantBufferPtr, Marshal.SizeOf<T>());
             }
             Marshal.StructureToPtr(buffer, _constantBufferPtr, _constantBufferSize > 0);
         }
+
+        public void BlitNow()
+        {
+            Plugin.Render(_instanceId);
+        }
         
-        IEnumerator OnRender()
+        private IEnumerator OnRender()
         {
             while (!_isDestroyed)
             {
                 yield return new WaitForEndOfFrame();
                 
                 if (!isActiveAndEnabled || !RenderEveryFrame || _targetTexture == null) continue;
-                GL.IssuePluginEvent(Plugin.GetRenderEventFunc(), 1);
+                GL.IssuePluginEvent(Plugin.GetRenderEventFunc(), _instanceId);
             }
 
             yield return null;
@@ -91,7 +98,7 @@ namespace RuntimeFragmentShader
                 _targetTexture.Create();
             }
             
-            Plugin.SetTexturePtr(_instancePtr, _targetTexture.GetNativeTexturePtr(), _targetTexture.width, _targetTexture.height, (int)_targetTexture.format.GetDxgiFormat());
+            Plugin.SetTexturePtr(_instanceId, _targetTexture.GetNativeTexturePtr(), _targetTexture.width, _targetTexture.height, (int)_targetTexture.format.GetDxgiFormat());
         }
         
     }

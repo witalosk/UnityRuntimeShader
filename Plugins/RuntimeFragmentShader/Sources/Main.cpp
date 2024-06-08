@@ -1,3 +1,6 @@
+#include <map>
+#include <unordered_map>
+
 #include "Renderer.h"
 
 #define UNITY_INTERFACE_API __stdcall
@@ -5,8 +8,9 @@
 
 namespace
 {
-	IUnityInterfaces* g_unity    = nullptr;
-	Renderer* g_renderer = nullptr;
+	IUnityInterfaces* g_unity = nullptr;
+	std::unordered_map<int, Renderer*> g_renderers = {};
+	int g_rendererCount = 0;
 }
 
 extern "C"
@@ -23,7 +27,7 @@ extern "C"
 	
 	void UNITY_INTERFACE_API OnRenderEvent(int eventId)
 	{
-		if (g_renderer) g_renderer->Update();
+		g_renderers[eventId]->Update();
 	}
 
 	UNITY_INTERFACE_EXPORT UnityRenderingEvent UNITY_INTERFACE_API GetRenderEventFunc()
@@ -31,34 +35,42 @@ extern "C"
 		return OnRenderEvent;
 	}
 
-	UNITY_INTERFACE_EXPORT void UNITY_INTERFACE_API SetTexturePtr(void* ptr, void* texture, int width, int height, int format)
+	UNITY_INTERFACE_EXPORT void UNITY_INTERFACE_API Render(int id)
 	{
-		auto renderer = reinterpret_cast<Renderer*>(ptr);
+		auto renderer = g_renderers[id];
+		renderer->Update();
+	}
+
+	UNITY_INTERFACE_EXPORT void UNITY_INTERFACE_API SetTexturePtr(int id, void* texture, int width, int height, int format)
+	{
+		auto renderer = g_renderers[id];
 		renderer->SetTexture(texture, width, height, format);
 	}
 
-	UNITY_INTERFACE_EXPORT void UNITY_INTERFACE_API SetConstantBuffer(void* ptr, void* buffer, int size)
+	UNITY_INTERFACE_EXPORT void UNITY_INTERFACE_API SetConstantBuffer(int id, void* buffer, int size)
 	{
-		auto renderer = reinterpret_cast<Renderer*>(ptr);
+		auto renderer = g_renderers[id];
 		renderer->SetConstantBuffer(buffer, size);
 	}
 
-	UNITY_INTERFACE_EXPORT void* UNITY_INTERFACE_API CreateRenderer()
+	UNITY_INTERFACE_EXPORT int UNITY_INTERFACE_API CreateRenderer()
 	{
-		g_renderer = new Renderer(g_unity);
-		return g_renderer;
+		g_rendererCount++;
+		auto renderer = new Renderer(g_unity);
+		g_renderers[g_rendererCount] = renderer;
+		return g_rendererCount;
 	}
 
-	UNITY_INTERFACE_EXPORT void UNITY_INTERFACE_API ReleaseRenderer(void* ptr)
+	UNITY_INTERFACE_EXPORT void UNITY_INTERFACE_API ReleaseRenderer(int id)
 	{
-		auto renderer = reinterpret_cast<Renderer*>(ptr);
-		if (g_renderer == renderer) g_renderer = nullptr;
+		auto renderer = g_renderers[id];
 		delete renderer;
+		g_renderers.erase(id);
 	}
 
-	UNITY_INTERFACE_EXPORT const char* UNITY_INTERFACE_API CompilePixelShaderFromString(void* ptr, const char* source)
+	UNITY_INTERFACE_EXPORT const char* UNITY_INTERFACE_API CompilePixelShaderFromString(int id, const char* source)
 	{
-		auto renderer = reinterpret_cast<Renderer*>(ptr);
+		auto renderer = g_renderers[id];
 		const char* result;
 		result = renderer->CompilePixelShaderFromString(source).c_str();
 		return result;
