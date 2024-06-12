@@ -1,24 +1,9 @@
 #pragma once
 
-#include <d3d11.h>
-#include <thread>
-#include <mutex>
-#include <d3dcompiler.h>
-#include <string>
+#include <unordered_map>
 
-#pragma comment(lib, "d3d11.lib")
-#pragma comment(lib, "d3dcompiler.lib")
-
-#include <vector>
-
-#include "Unity/IUnityInterface.h"
-#include "Unity/IUnityGraphics.h"
-#include "Unity/IUnityGraphicsD3D11.h"
-#include "Unity/IUnityLog.h"
-
-#ifndef SAFE_RELEASE
-	#define SAFE_RELEASE(a) if (a) { a->Release(); a = NULL; }
-#endif
+#include "Common.h"
+#include "Resources/Texture2D.h"
 
 class Renderer
 {
@@ -30,8 +15,7 @@ private:
 	ID3D11RenderTargetView* _frameBufferView = nullptr;
 	IUnityLog* _logger = nullptr;
 
-	ID3D11Buffer* _vertexBuffer; // vertex buffer
-	ID3D11Buffer* _constantBuffer; // constant buffer
+	ID3D11Buffer* _vertexBuffer;
 	ID3D11VertexShader* _vertexShader;
 	ID3D11PixelShader* _pixelShader;
 	ID3D11InputLayout* _inputLayout;
@@ -39,7 +23,9 @@ private:
 	ID3D11BlendState* _blendState;
 	ID3D11DepthStencilState* _depthState;
 
-	std::vector<ID3D11ShaderResourceView*> _shaderResourceViews;
+	// Additional resources
+	ID3D11Buffer* _constantBuffer;
+	std::unordered_map<int, Texture2D*> _textures = {};
 
 	std::thread _thread;
 	std::mutex _mutex;
@@ -55,11 +41,11 @@ public:
 	Renderer(IUnityInterfaces* unity);
 	~Renderer();
 	void Update();
-	void SetTexture(void* ptr, int width, int height, int format);
+	void SetOutputTexture(void* ptr, int width, int height, int format);
 	void SetConstantBuffer(void* buffer, int size);
 	void CreateResources();
 	std::string CompilePixelShaderFromString(const std::string& source);
-	void AddTexture(ID3D11ShaderResourceView* srv);
+	void SetTexture(int slot, void* ptr, int format);
 
 private:
 	void Start();

@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
@@ -27,6 +28,8 @@ namespace RuntimeFragmentShader
         private IntPtr _constantBufferPtr = IntPtr.Zero;
         private int _constantBufferSize = 0;
         private bool _isDestroyed = false;
+        
+        private readonly Dictionary<int, RenderTexture> _tex2dDic = new();
 
         private void Awake()
         {
@@ -54,6 +57,11 @@ namespace RuntimeFragmentShader
             {
                 Marshal.FreeHGlobal(_constantBufferPtr);
             }
+            
+            foreach (var tex in _tex2dDic.Values)
+            {
+                tex.Release();
+            }
         }
         
         public bool CompileFragmentShader(out string error)
@@ -76,7 +84,7 @@ namespace RuntimeFragmentShader
             
             IntPtr result = Plugin.CompilePixelShaderFromString(_instanceId, Marshal.StringToHGlobalAnsi($"struct VsOutput {{ float4 pos : SV_POSITION; float2 uv : TEXCOORD0; }}; {shaderCode}"));
             string resultString = Marshal.PtrToStringAnsi(result);
-            if (!string.IsNullOrEmpty(resultString))
+            if (!string.IsNullOrEmpty(resultString) || resultString != "")
             {
                 error = resultString;
                 return false;
@@ -106,6 +114,51 @@ namespace RuntimeFragmentShader
                 Plugin.SetConstantBuffer(_instanceId, _constantBufferPtr, Marshal.SizeOf<T>());
             }
             Marshal.StructureToPtr(buffer, _constantBufferPtr, _constantBufferSize > 0);
+        }
+        
+        public void SetTexture(int slot, Texture texture)
+        {
+            if (_instanceId < 0 || texture == null) return;
+            
+            if (texture is RenderTexture rt)
+            {
+                if (_tex2dDic.TryGetValue(slot, out var renderTex))
+                {
+                    renderTex.Release();
+                    _tex2dDic.Remove(slot);
+                }
+                
+                if (!rt.IsCreated())
+                {
+                    rt.Create();
+                }
+                
+                Plugin.SetTexture(_instanceId, slot, texture.GetNativeTexturePtr(), (int)rt.format.GetDxgiFormat());
+                return;
+            }
+
+            if (texture is Texture2D t2d)
+            {
+                if (_tex2dDic.TryGetValue(slot, out var renderTex))
+                {
+                    if (renderTex.width == t2d.width && renderTex.height == t2d.height)
+                    {
+                        Graphics.Blit(t2d, renderTex);
+                        return;
+                    }
+                    
+                    renderTex.Release();
+                }
+ 
+                _tex2dDic[slot] = new RenderTexture(t2d.width, t2d.height, 0);
+                _tex2dDic[slot].Create();
+                Graphics.Blit(t2d, _tex2dDic[slot]);
+                
+                Plugin.SetTexture(_instanceId, slot, _tex2dDic[slot].GetNativeTexturePtr(), (int)_tex2dDic[slot].format.GetDxgiFormat());
+                return;
+            }
+
+            throw new NotSupportedException("This texture type is not supported.");
         }
 
         public void BlitNow()
@@ -137,7 +190,7 @@ namespace RuntimeFragmentShader
                 _targetTexture.Create();
             }
             
-            Plugin.SetTexturePtr(_instanceId, _targetTexture.GetNativeTexturePtr(), _targetTexture.width, _targetTexture.height, (int)_targetTexture.format.GetDxgiFormat());
+            Plugin.SetOutputTexture(_instanceId, _targetTexture.GetNativeTexturePtr(), _targetTexture.width, _targetTexture.height, (int)_targetTexture.format.GetDxgiFormat());
         }
         
     }

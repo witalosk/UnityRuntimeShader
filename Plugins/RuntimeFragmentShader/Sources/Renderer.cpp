@@ -27,7 +27,6 @@ void Renderer::Start()
 		return;
 	}
 
-
 	// input layout
 	D3D11_INPUT_ELEMENT_DESC _dx11InputElementDesc[] =
 	{
@@ -38,10 +37,6 @@ void Renderer::Start()
 	{
 		UNITY_LOG_ERROR(_logger, "[ShaderRenderer] Failed to create input layout");
 	}
-	UNITY_LOG(_logger, "[ShaderRenderer] Succeeded to create input layout");
-
-	
-	UNITY_LOG(_logger, "[ShaderRenderer] Started");
 }
 
 void Renderer::Update()
@@ -80,6 +75,12 @@ void Renderer::Update()
 	// Set shaders
 	context->VSSetShader(_vertexShader, nullptr, 0);
 	context->PSSetShader(_pixelShader, nullptr, 0);
+
+	// Set Additional Resources
+	for (auto tex : _textures)
+	{
+		tex.second->SetToFragmentShader(context, tex.first);
+	}
 	
 	context->Draw(2 * 3, 0);
 	context->Release();
@@ -98,13 +99,16 @@ void Renderer::Stop()
 	SAFE_RELEASE(_rasterState);
 	SAFE_RELEASE(_blendState);
 	SAFE_RELEASE(_depthState);
-	_isRunning = false;
 	
-	UNITY_LOG(_logger, "[ShaderRenderer] Stopped");
-
+	for (auto tex : _textures)
+	{
+		tex.second->~Texture2D();
+	}
+	
+	_isRunning = false;
 }
 
-void Renderer::SetTexture(void* ptr, int width, int height, int format)
+void Renderer::SetOutputTexture(void* ptr, int width, int height, int format)
 {
 	_texture = static_cast<ID3D11Texture2D*>(ptr);
 	_width = width;
@@ -145,7 +149,6 @@ void Renderer::SetConstantBuffer(void* buffer, int size)
 	}
 
 	_constantBufferSize = size;
-	UNITY_LOG(_logger, "[ShaderRenderer] Succeeded to create constant buffer");
 }
 
 void Renderer::CreateResources()
@@ -241,9 +244,24 @@ std::string Renderer::CompilePixelShaderFromString(const std::string& source)
 		return "Failed to compile fragment shader";
 	}
 	
-	UNITY_LOG(_logger, "[ShaderRenderer] Succeeded to compile fragment shader");
-
 	return "";
+}
+
+void Renderer::SetTexture(int slot, void* ptr, int format)
+{
+	if (_textures.count(slot) == 0)
+	{
+		_textures[slot] = new Texture2D();
+	}
+
+	HRESULT hr = _textures[slot]->UpdateTexture(_device, ptr, format);
+	if (FAILED(hr))
+	{
+		UNITY_LOG_ERROR(_logger, ("[ShaderRenderer] Failed to update texture: " + std::to_string(hr)).c_str());
+		return;
+	}
+
+	UNITY_LOG(_logger, "[ShaderRenderer] Succeeded to update texture");
 }
 
 ID3DBlob* Renderer::CompileVertexShader()
@@ -266,8 +284,6 @@ ID3DBlob* Renderer::CompileVertexShader()
 	{
 		UNITY_LOG(_logger, "[ShaderRenderer] Failed to compile vertex shader");
 	}
-
-	UNITY_LOG(_logger, "[ShaderRenderer] Succeeded to compile vertex shader");
 	
 	return compiledShader;
 }

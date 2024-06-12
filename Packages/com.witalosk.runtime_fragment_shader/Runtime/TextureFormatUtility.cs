@@ -44,5 +44,30 @@ namespace RuntimeFragmentShader
             }
         }
         
+        public static DxgiFormat GetDxgiFormat(this TextureFormat textureFormat)
+        {
+            switch (textureFormat)
+            {
+                case TextureFormat.RGBA32:
+                    return DxgiFormat.DXGI_FORMAT_R8G8B8A8_UNORM;
+                case TextureFormat.BGRA32:
+                    return DxgiFormat.DXGI_FORMAT_B8G8R8A8_UNORM;
+                case TextureFormat.RGBAFloat:
+                    return DxgiFormat.DXGI_FORMAT_R32G32B32A32_FLOAT;
+                case TextureFormat.RGBAHalf:
+                    return DxgiFormat.DXGI_FORMAT_R16G16B16A16_FLOAT;
+                case TextureFormat.RGFloat:
+                    return DxgiFormat.DXGI_FORMAT_R32G32_FLOAT;
+                case TextureFormat.RGHalf:
+                    return DxgiFormat.DXGI_FORMAT_R16G16_FLOAT;
+                case TextureFormat.RFloat:
+                    return DxgiFormat.DXGI_FORMAT_R32_FLOAT;
+                case TextureFormat.RHalf:
+                    return DxgiFormat.DXGI_FORMAT_R16_FLOAT;
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+        
     }
 }

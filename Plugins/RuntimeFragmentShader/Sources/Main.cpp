@@ -41,16 +41,10 @@ extern "C"
 		renderer->Update();
 	}
 
-	UNITY_INTERFACE_EXPORT void UNITY_INTERFACE_API SetTexturePtr(int id, void* texture, int width, int height, int format)
+	UNITY_INTERFACE_EXPORT void UNITY_INTERFACE_API SetOutputTexture(int id, void* texture, int width, int height, int format)
 	{
 		auto renderer = g_renderers[id];
-		renderer->SetTexture(texture, width, height, format);
-	}
-
-	UNITY_INTERFACE_EXPORT void UNITY_INTERFACE_API SetConstantBuffer(int id, void* buffer, int size)
-	{
-		auto renderer = g_renderers[id];
-		renderer->SetConstantBuffer(buffer, size);
+		renderer->SetOutputTexture(texture, width, height, format);
 	}
 
 	UNITY_INTERFACE_EXPORT int UNITY_INTERFACE_API CreateRenderer()
@@ -76,4 +70,15 @@ extern "C"
 		return result;
 	}
 
+	UNITY_INTERFACE_EXPORT void UNITY_INTERFACE_API SetConstantBuffer(int id, void* buffer, int size)
+	{
+		auto renderer = g_renderers[id];
+		renderer->SetConstantBuffer(buffer, size);
+	}
+
+	UNITY_INTERFACE_EXPORT void UNITY_INTERFACE_API SetTexture(int id, int slot, void* texture, int format)
+	{
+		auto renderer = g_renderers[id];
+		renderer->SetTexture(slot, texture, format);
+	}
 }

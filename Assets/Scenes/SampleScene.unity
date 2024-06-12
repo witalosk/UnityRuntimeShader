@@ -563,19 +563,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _targetTexture: {fileID: 0}
   _renderEveryFrame: 1
-  _fragmentShaderCode: "#include \"ShaderIncludes/hoge.hlsl\"\n//  #include \"ShaderIncludes/huga.hlsl\"\n\ncbuffer
-    cb\r\n{\r\n    float time;\r\n}\r\n\r\nfloat Noise(float t)\r\n{\r\n    return
-    sin(t * 0.2) + 0.5 * sin(t) + 0.33 * sin(t * 3.2234) + 0.1 * sin(t * 10.231);\r\n}\r\n\r\nfloat3
-    GetColor(float t)\r\n{\r\n    float3 base = float3(0.0, 0.1, 0.2);\r\n    float3
-    scale = cos(Noise(t) * 0.2);\r\n    float3 speed = float3(2.0,  0.5, 1.0);\r\n   
-    float3 d = float3(0.8, 0.1, 0.5);\r\n\r\n    return base + scale * cos(3.0 *
-    (speed * t + d + GetInt()));\r\n}\r\n\r\nfloat4 Frag(VsOutput input) : SV_TARGET\r\n{\r\n   
-    float2 uv = (input.uv - 0.5) + cos(input.uv.x + time) - sin(input.uv.y + time
-    * 0.4);\r\n    float3 finalColor = 0.0;\r\n    \r\n    for (float i = 0.0; i
-    < 6.0; i++)\r\n    {\r\n        uv = frac(uv) - 0.5 * (uv.x + uv.y * sin(time));\r\n       
+  _fragmentShaderCode: "#include \"ShaderIncludes/hoge.hlsl\"\n\nTexture2D _Texture
+    : register(t0);\nSamplerState _TextureSampler : register(s0);\n\ncbuffer cb\r\n{\r\n   
+    float time;\r\n}\r\n\r\nfloat3 GetColor(float t)\r\n{\r\n    float3 base = float3(0.0,
+    0.1, 0.2);\r\n    float3 scale = cos(Noise(t) * 0.2);\r\n    float3 speed = float3(2.0, 
+    0.5, 1.0);\r\n    float3 d = float3(0.8, 0.1, 0.5);\r\n\r\n    return base +
+    scale * cos(3.0 * (speed * t + d));\r\n}\r\n\r\nfloat4 Frag(VsOutput input) :
+    SV_TARGET\r\n{\r\n    float2 uv = (input.uv - 0.5) + cos(input.uv.x + time) -
+    sin(input.uv.y + time * 0.4);\r\n    float3 finalColor =  _Texture.Sample(_TextureSampler,
+    input.uv).rgb * max(0.0, -sin(time));\n    \r\n    for (float i = 0.0; i < 6.0;
+    i++)\r\n    {\r\n        uv = frac(uv) - 0.5 * (uv.x + uv.y * sin(time));\r\n       
     float len = length(uv);\r\n        finalColor += exp(len) * GetColor(length(uv)
-    + i*.4 + time*0.2) * 0.1 * GetInt();\r\n    }\r\n    \r\n    return float4(finalColor,
-    1.0);\r\n}"
+    + i*.4 + time*0.2) * 0.1;\r\n    }\r\n    \r\n    return float4(finalColor, 1.0);\r\n}"
 --- !u!64 &351748723
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -668,6 +667,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _textureSize: {x: 512, y: 512}
+  _attachTexture: {fileID: 2800000, guid: 6d31fd427e01be14ebf43303ab7451ae, type: 3}
 --- !u!1 &391608068
 GameObject:
   m_ObjectHideFlags: 0

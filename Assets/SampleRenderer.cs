@@ -14,6 +14,7 @@ namespace RuntimeFragmentShader.Sample
         public string FragmentShaderCode => _shaderRenderer.FragmentShaderCode;
         
         [SerializeField] private Vector2Int _textureSize = new(256, 256);
+        [SerializeField] private Texture2D _attachTexture;
         
         private SampleConstantBuffer _constantBuffer;
         private RenderTexture _targetTexture;
@@ -36,6 +37,7 @@ namespace RuntimeFragmentShader.Sample
         private void Update()
         {
             _constantBuffer.Time = Time.time;
+            _shaderRenderer.SetTexture(0, _attachTexture);
             _shaderRenderer.SetConstantBuffer(_constantBuffer);
         }
         
