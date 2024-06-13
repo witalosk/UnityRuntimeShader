@@ -45,42 +45,44 @@ void Renderer::Update()
 	
 	ID3D11DeviceContext* context;
 	_device->GetImmediateContext(&context);
-	
-	context->OMSetRenderTargets(1, &_frameBufferView, nullptr);
-	
-	FLOAT backgroundColor[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
-	context->ClearRenderTargetView(_frameBufferView, backgroundColor);
 
-	context->OMSetDepthStencilState(_depthState, 0);
-	context->RSSetState(_rasterState);
-	context->OMSetBlendState(_blendState, nullptr, 0xFFFFFFFF);
-	
-	// Update constant buffer
-	if (_constantBufferSize > 0 && _constantBuffer != nullptr)
-	{
-		context->UpdateSubresource(_constantBuffer, 0, nullptr, _constantBufferPtr, 0, 0);
-		context->PSSetConstantBuffers(0, 1, &_constantBuffer);
-	}
-
-	const D3D11_VIEWPORT* vp = new D3D11_VIEWPORT{0.0f, 0.0f, static_cast<float>(_width), static_cast<float>(_height), 0.0f, 1.0f};
-	context->RSSetViewports(1, vp);
-	
-	// set input assembler data and draw
+	// IA: set input assembler data and draw
 	context->IASetInputLayout(_inputLayout);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	UINT stride = 4 * sizeof(float);
 	UINT offset = 0;
 	context->IASetVertexBuffers(0, 1, &_vertexBuffer, &stride, &offset);
 
-	// Set shaders
+	// VS: set vertex shader
 	context->VSSetShader(_vertexShader, nullptr, 0);
+	
+	// RS: set rasterizer stage
+	const D3D11_VIEWPORT* vp = new D3D11_VIEWPORT{0.0f, 0.0f, static_cast<float>(_width), static_cast<float>(_height), 0.0f, 1.0f};
+	context->RSSetViewports(1, vp);
+	context->RSSetState(_rasterState);
+	
+	// PS: set pixel shader
 	context->PSSetShader(_pixelShader, nullptr, 0);
 
 	// Set Additional Resources
+	if (_constantBufferSize > 0 && _constantBuffer != nullptr)
+	{
+		context->UpdateSubresource(_constantBuffer, 0, nullptr, _constantBufferPtr, 0, 0);
+		context->PSSetConstantBuffers(0, 1, &_constantBuffer);
+	}
+
 	for (auto tex : _textures)
 	{
 		tex.second->SetToFragmentShader(context, tex.first);
 	}
+
+	// OM: set output merger stage
+	context->OMSetRenderTargets(1, &_frameBufferView, nullptr);
+	context->OMSetDepthStencilState(_depthState, 0);
+	context->OMSetBlendState(_blendState, nullptr, 0xFFFFFFFF);
+	
+	FLOAT backgroundColor[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
+	context->ClearRenderTargetView(_frameBufferView, backgroundColor);
 	
 	context->Draw(2 * 3, 0);
 	context->Release();

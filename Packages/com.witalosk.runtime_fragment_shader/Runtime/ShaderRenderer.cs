@@ -79,7 +79,7 @@ namespace RuntimeFragmentShader
             {
                 string includeFileName = match.Groups[1].Value;
                 string includeStr = File.ReadAllText($"{Application.streamingAssetsPath}/{includeFileName}");
-                shaderCode = shaderCode.Replace($"#include \"{includeFileName}\"", includeStr);
+                shaderCode = shaderCode.Replace($"#include \"{includeFileName}\"", $"\n{includeStr}");
             }
             
             IntPtr result = Plugin.CompilePixelShaderFromString(_instanceId, Marshal.StringToHGlobalAnsi($"struct VsOutput {{ float4 pos : SV_POSITION; float2 uv : TEXCOORD0; }}; {shaderCode}"));
