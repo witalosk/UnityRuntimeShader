@@ -1,0 +1,21 @@
+#pragma kernel ApplyNoise
+
+#include "Common.hlsl"
+
+RWStructuredBuffer<Particle> _ParticleReadBuffer;
+RWStructuredBuffer<Particle> _ParticleWriteBuffer;
+
+float _DeltaTime;
+float _SimulationTime;
+float _NoiseFrequency;
+float _NoiseScale;
+float _NoiseSpeed;
+
+[numthreads(256, 1, 1)]
+void ApplyNoise (uint3 id : SV_DispatchThreadID)
+{
+    uint pid = id.x;
+    Particle p = _ParticleReadBuffer[pid];
+    p.velocity += SimplexNoiseGrad(p.position * _NoiseFrequency + float3(0, 0, _SimulationTime * _NoiseSpeed)).xyz * _NoiseScale *_DeltaTime;
+    _ParticleWriteBuffer[pid] = p;
+}

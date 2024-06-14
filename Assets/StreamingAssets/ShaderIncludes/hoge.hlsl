@@ -1,5 +1,5 @@
-#ifndef _HOGE_HLSL_
-#define _HOGE_HLSL_
+#ifndef HLSL_INCLUDE_HOGE
+#define HLSL_INCLUDE_HOGE
 
 float Noise(float x)
 {

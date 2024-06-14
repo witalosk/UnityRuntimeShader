@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
+  m_SkyboxMaterial: {fileID: 0}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
+  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -573,10 +573,11 @@ MonoBehaviour:
     0.25), t);\r\n}\r\n\r\nfloat4 Frag(VsOutput input) : SV_TARGET\r\n{\r\n    float2
     uv = input.uv;\r\n    uv = (uv * 2 - 1) * 0.75;\r\n    float2 uv0 = uv;\r\n   
     float3 col = 0.0;\r\n    col = (1 -  _Texture.Sample(_TextureSampler, input.uv).rgb)
-    * max(0.0, -sin(time));\r\n    \r\n    for(float i  = 0.0; i < 4.0; i+= 1)\n   
-    {\n        uv = frac(uv * (1.5 + i * 0.01)) - 0.5;\n        col += pow((0.005
-    + Noise(time*20) * 0.002) / abs(Dist(uv, sin(time) * 0.5 + 0.5)), 1.3)\r;\n       
-    col *= GetColor(time);\n    }\n\n    \r\n    return float4(col, 1.0);\r\n}"
+    * max(0.0, -sin(time));\r\n    \r\n    float t = floor(time) + pow(frac(time*2),
+    0.3);\n\n    for(float i  = 0.0; i < 4.0; i+= 1)\n    {\n        uv = frac(uv
+    * (1.5 + i * 0.01)) - 0.5;\n        col += pow((0.005 + Noise(t*20) * 0.002)
+    / abs(Dist(uv, sin(t*2*3.1415+i) * 0.5 + 0.5)), 1.3)\r;\n        col *= GetColor(t);\n   
+    }\n\n    \r\n    return float4(col, 1.0);\r\n}"
 --- !u!64 &351748723
 MeshCollider:
   m_ObjectHideFlags: 0

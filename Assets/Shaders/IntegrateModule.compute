@@ -1,0 +1,19 @@
+#pragma kernel Integrate
+
+#include "Common.hlsl"
+
+RWStructuredBuffer<Particle> _ParticleReadBuffer;
+RWStructuredBuffer<Particle> _ParticleWriteBuffer;
+
+float _DeltaTime;
+float _NoiseScale;
+
+[numthreads(256, 1, 1)]
+void Integrate (uint3 id : SV_DispatchThreadID)
+{
+    uint pid = id.x;
+    Particle p = _ParticleReadBuffer[pid];
+    p.position += p.velocity * _DeltaTime;
+    
+    _ParticleWriteBuffer[pid] = p;
+}
