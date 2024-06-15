@@ -147,13 +147,17 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Sources\Dispatcher.cpp" />
     <ClCompile Include="Sources\Main.cpp" />
     <ClCompile Include="Sources\Renderer.cpp" />
+    <ClCompile Include="Sources\Resources\RwBuffer.cpp" />
     <ClCompile Include="Sources\Resources\Texture2D.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sources\Common.h" />
+    <ClInclude Include="Sources\Dispatcher.h" />
     <ClInclude Include="Sources\Renderer.h" />
+    <ClInclude Include="Sources\Resources\RwBuffer.h" />
     <ClInclude Include="Sources\Resources\Texture2D.h" />
     <ClInclude Include="Sources\Unity\IUnityGraphics.h" />
     <ClInclude Include="Sources\Unity\IUnityGraphicsD3D11.h" />

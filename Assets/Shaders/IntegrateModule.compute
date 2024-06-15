@@ -2,7 +2,7 @@
 
 #include "Common.hlsl"
 
-RWStructuredBuffer<Particle> _ParticleReadBuffer;
+StructuredBuffer<Particle> _ParticleReadBuffer;
 RWStructuredBuffer<Particle> _ParticleWriteBuffer;
 
 float _DeltaTime;

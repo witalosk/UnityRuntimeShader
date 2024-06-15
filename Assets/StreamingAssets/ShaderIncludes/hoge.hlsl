@@ -1,6 +1,15 @@
 #ifndef HLSL_INCLUDE_HOGE
 #define HLSL_INCLUDE_HOGE
 
+struct Particle
+{
+    int uuid;
+    float size;
+    float3 position;
+    float3 velocity;
+    float4 color;
+};
+
 float Noise(float x)
 {
     float i = floor(x);

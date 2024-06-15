@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace RuntimeFragmentShader.Sample
 {
-    public struct SampleConstantBuffer
+    public struct SampleFragmentConstantBuffer
     {
         public float Time;
     }
@@ -11,12 +11,10 @@ namespace RuntimeFragmentShader.Sample
     [RequireComponent(typeof(ShaderRenderer))]
     public class SampleRenderer : MonoBehaviour
     {
-        public string FragmentShaderCode => _shaderRenderer.FragmentShaderCode;
-        
         [SerializeField] private Vector2Int _textureSize = new(256, 256);
         [SerializeField] private Texture2D _attachTexture;
         
-        private SampleConstantBuffer _constantBuffer;
+        private SampleFragmentConstantBuffer _constantBuffer;
         private RenderTexture _targetTexture;
         private ShaderRenderer _shaderRenderer;
 
@@ -26,7 +24,6 @@ namespace RuntimeFragmentShader.Sample
             if (_shaderRenderer == null)
             {
                 _shaderRenderer = gameObject.AddComponent<ShaderRenderer>();
-                return;
             }
             _targetTexture = new RenderTexture(_textureSize.x, _textureSize.y, 0, RenderTextureFormat.ARGBFloat);
             _shaderRenderer.TargetTexture = _targetTexture;
@@ -44,14 +41,6 @@ namespace RuntimeFragmentShader.Sample
         private void OnDestroy()
         {
             Destroy(_targetTexture);
-        }
-        
-        public void CompileFragmentShader(string fragmentShaderCode)
-        {
-            if (_shaderRenderer.CompileFragmentShaderFromString(fragmentShaderCode, out string error))
-            {
-                Debug.LogError(error);
-            }
         }
     }
 }

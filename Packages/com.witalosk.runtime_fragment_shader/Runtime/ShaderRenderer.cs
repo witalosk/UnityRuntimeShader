@@ -1,24 +1,22 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace RuntimeFragmentShader
 {
-    public class ShaderRenderer : MonoBehaviour
+    public class ShaderRenderer : NativeShaderExecutorBase
     {
         public bool RenderEveryFrame { get => _renderEveryFrame; set => _renderEveryFrame = value; }
         public RenderTexture TargetTexture { get => _targetTexture; set => ChangeTargetTexture(value); }
-        public string FragmentShaderCode => _fragmentShaderCode;
+        public override string ShaderCode {get => _fragmentShaderCode; set => _fragmentShaderCode = value;}
 
         [SerializeField] private RenderTexture _targetTexture;
         [SerializeField] private bool _renderEveryFrame = true;
         
         [Space]
-        [SerializeField, TextArea(10, 20)]
+        [SerializeField]
         private string _fragmentShaderCode = @"float4 Frag(VsOutput input) : SV_TARGET
 {
 	return float4(input.uv, 1.0 - uv.x, 1.0);
@@ -35,7 +33,7 @@ namespace RuntimeFragmentShader
         {
             _instanceId = Plugin.CreateRenderer();
             
-            if (!CompileFragmentShader(out string error))
+            if (!CompileShader(out string error))
             {
                 Debug.LogError(error);
             }
@@ -64,7 +62,7 @@ namespace RuntimeFragmentShader
             }
         }
         
-        public bool CompileFragmentShader(out string error)
+        public override bool CompileShader(out string error)
         {
             if (_instanceId < 0)
             {
@@ -72,16 +70,7 @@ namespace RuntimeFragmentShader
                 return false;
             }
             
-            // replace #include
-            string shaderCode = _fragmentShaderCode;
-            var includeMatches = Regex.Matches(shaderCode, @"^(?!//)#include ""([^""]+)""");
-            foreach (Match match in includeMatches)
-            {
-                string includeFileName = match.Groups[1].Value;
-                string includeStr = File.ReadAllText($"{Application.streamingAssetsPath}/{includeFileName}");
-                shaderCode = shaderCode.Replace($"#include \"{includeFileName}\"", $"\n{includeStr}");
-            }
-            
+            string shaderCode = ShaderPrecompileProcessor.ProcessInclude(_fragmentShaderCode);
             IntPtr result = Plugin.CompilePixelShaderFromString(_instanceId, Marshal.StringToHGlobalAnsi($"struct VsOutput {{ float4 pos : SV_POSITION; float2 uv : TEXCOORD0; }}; {shaderCode}"));
             string resultString = Marshal.PtrToStringAnsi(result);
             if (!string.IsNullOrEmpty(resultString) || resultString != "")
@@ -94,10 +83,10 @@ namespace RuntimeFragmentShader
             return true;
         }
         
-        public bool CompileFragmentShaderFromString(string shaderCode, out string error)
+        public override bool CompileShaderFromString(string shaderCode, out string error)
         {
             _fragmentShaderCode = shaderCode;
-            return CompileFragmentShader(out error);
+            return CompileShader(out error);
         }
         
         public void SetConstantBuffer<T>(T buffer) where T : struct

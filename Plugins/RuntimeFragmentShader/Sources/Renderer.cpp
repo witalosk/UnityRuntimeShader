@@ -262,8 +262,6 @@ void Renderer::SetTexture(int slot, void* ptr, int format)
 		UNITY_LOG_ERROR(_logger, ("[ShaderRenderer] Failed to update texture: " + std::to_string(hr)).c_str());
 		return;
 	}
-
-	UNITY_LOG(_logger, "[ShaderRenderer] Succeeded to update texture");
 }
 
 ID3DBlob* Renderer::CompileVertexShader()

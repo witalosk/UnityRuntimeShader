@@ -3,16 +3,16 @@ using UnityEngine;
 
 namespace RuntimeFragmentShader.Editor
 {
-    [CustomEditor(typeof(ShaderRenderer))]
-    public class ShaderRendererDrawer : UnityEditor.Editor
+    [CustomEditor(typeof(KernelDispatcher))]
+    public class KernelDispatcherDrawer : UnityEditor.Editor
     {
-        ShaderRenderer _shaderRenderer = null;
+        KernelDispatcher _kernelDispatcher = null;
         CodeEditor _codeEditor;
         Vector2 _scrollPos;
         
         private void OnEnable()
         {
-            _shaderRenderer = target as ShaderRenderer;
+            _kernelDispatcher = target as KernelDispatcher;
             _codeEditor = new CodeEditor
             {
                 Highlighter = HlslHighliter.Highlight
@@ -31,12 +31,13 @@ namespace RuntimeFragmentShader.Editor
             };
             
             _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos, GUILayout.Height(200));
-            _shaderRenderer.ShaderCode = _codeEditor.Draw(_shaderRenderer.ShaderCode, style, GUILayout.ExpandHeight(true));
+            _kernelDispatcher.ShaderCode = _codeEditor.Draw(_kernelDispatcher.ShaderCode, style, GUILayout.ExpandHeight(true));
             EditorGUILayout.EndScrollView();
+
 
             if (GUILayout.Button("Compile", GUILayout.Height(24f)))
             {
-                if (!_shaderRenderer.CompileShader(out var error))
+                if (!_kernelDispatcher.CompileShader(out var error))
                 {
                     Debug.LogError(error);
                 }
