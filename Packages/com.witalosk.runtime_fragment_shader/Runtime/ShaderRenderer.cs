@@ -16,7 +16,7 @@ namespace RuntimeFragmentShader
         [SerializeField] private bool _renderEveryFrame = true;
         
         [Space]
-        [SerializeField]
+        [SerializeField, HideInInspector]
         private string _fragmentShaderCode = @"float4 Frag(VsOutput input) : SV_TARGET
 {
 	return float4(input.uv, 1.0 - uv.x, 1.0);

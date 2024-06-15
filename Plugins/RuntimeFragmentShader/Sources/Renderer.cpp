@@ -242,7 +242,6 @@ std::string Renderer::CompilePixelShaderFromString(const std::string& source)
 	if (FAILED(hr))
 	{
 		UNITY_LOG_ERROR(_logger, "[ShaderRenderer] Failed to compile pixel shader");
-		UNITY_LOG(_logger, std::to_string(hr).c_str());
 		return "Failed to compile fragment shader";
 	}
 	

@@ -158,21 +158,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _targetTexture: {fileID: 0}
   _renderEveryFrame: 1
-  _fragmentShaderCode: "#include \"ShaderIncludes/hoge.hlsl\"\r\n\r\nTexture2D _Texture
-    : register(t0);\r\nSamplerState _TextureSampler : register(s0);\r\n\r\ncbuffer
-    cb\r\n{\r\n    float time;\r\n}\r\n\r\nfloat3 GetColor(float t)\r\n{\r\n    float3
-    base = float3(0.0, 0.1, 0.2);\r\n    float3 scale = cos(Noise(t) * 0.2);\r\n   
-    float3 speed = float3(2.0,  0.5, 1.0);\r\n    float3 d = float3(0.8, 0.1, 0.5);\r\n\r\n   
-    return base + scale * cos(3.0 * (speed * t + d));\r\n}\r\n\r\nfloat Dist(float2
-    pos, float t)\r\n{\r\n    return lerp(SdTriangle(pos, 0.25), SdPentagon(pos,
-    0.25), t);\r\n}\r\n\r\nfloat4 Frag(VsOutput input) : SV_TARGET\r\n{\r\n    float2
-    uv = input.uv;\r\n    uv = (uv * 2 - 1) * 0.75;\r\n    float2 uv0 = uv;\r\n   
-    float3 col = 0.0;\r\n    col = (1 -  _Texture.Sample(_TextureSampler, input.uv).rgb)
-    * max(0.0, -sin(time));\r\n    \r\n    float t = floor(time) + pow(frac(time*2),
-    0.3);\n\n    for(float i  = 0.0; i < 4.0; i+= 1)\n    {\n        uv = frac(uv
-    * (1.5 + i * 0.01)) - 0.5;\n        col += pow((0.005 + Noise(t*20) * 0.002)
-    / abs(Dist(uv, sin(t*2*3.1415+i) * 0.5 + 0.5)), 1.3)\r;\n        col *= GetColor(t);\n   
-    }\n\n    \r\n    return float4(col, 1.0);\r\n}"
+  _fragmentShaderCode: "#include \"ShaderIncludes/hoge.hlsl\"\r\n#define PI 3.141592\n\r\nTexture2D
+    _Texture : register(t0);\r\nSamplerState _TextureSampler : register(s0);\r\n\r\ncbuffer
+    cb\r\n{\r\n    float time;\r\n}\r\n\r\nfloat sin01(float v)\n{\n    return sin(v)
+    * 0.5 + 0.5;\n}\n\nfloat3 GetColor(float t)\r\n{\r\n      float3 c1 = float3(0.0,
+    0.5, 0.9);\r\n      float3 c2 = float3(0.7, 0.0, 0.9);\r\n      float3 c3 = float3(0.2,
+    0.3, 0.9);\r\n      return (c1 * sin01(t * 0.5) + c2 * sin01(t + 0.321) + c3
+    * sin01(t * 2.0)) * sin01(t * 2.0);\n}\r\n\r\nfloat Dist(float2 pos, float t)\r\n{\r\n   
+    return lerp(SdTriangle(pos, 0.1), SdPentagon(pos, 0.3), t);\r\n}\r\n\r\nfloat4
+    Frag(VsOutput input) : SV_TARGET\r\n{\r\n    float2 uv = (input.uv * 2 - 1) *
+    0.5;\r\r\n    float2 uv0 = uv;\n    float d0 = length(uv);\n    float t = floor(time)
+    + pow(frac(time * 2), 0.3);\r\n\r\n    float3 col = (1 -  _Texture.Sample(_TextureSampler,
+    input.uv + float2(Noise(time + uv.y), 0) * 0.1).rgb) * max(0.0, -sin(time));\r\n   
+    col += 0.01 / abs(SdTriangle(Rotate(uv0, 2 * t * PI), 0.2)) * GetColor(time *
+    3);    \r\n    \n    float zoom = 0.2 + sin01(time * 0.1 + t * 0.1 + d0) * 1.5;\n   
+    uv *= zoom;\n\n    for (float i  = 0.0; i < 6.0; i += 1)\n    {\n        float2
+    inner = uv * (1.5 + i * 0.5);\n        float2 quo = floor(inner);\n        uv
+    = frac(inner) - 0.5;\n        \n        col += pow((0.07 + Noise(t * 20) * 0.002)
+    / abs(Dist(uv, sin(t * 2 * PI + i) * 0.5 + 0.5 + d0 * 0.1)), 1.3)\r*\nGetColor(i
+    + time + d0 + quo.y) * 0.1 * exp(-i-1);\n    }\n\n    \r\n    return float4(col,
+    1.0);\r\n}"
 --- !u!64 &351748723
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -264,7 +269,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: be3c95599c85476ca59a6522b1cb1527, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _textureSize: {x: 512, y: 512}
+  _textureSize: {x: 1024, y: 1024}
   _attachTexture: {fileID: 2800000, guid: 6d31fd427e01be14ebf43303ab7451ae, type: 3}
 --- !u!224 &391608069 stripped
 RectTransform:
@@ -719,6 +724,18 @@ PrefabInstance:
       objectReference: {fileID: 351748722}
     - target: {fileID: 7641722379390808375, guid: 121e7aa0f1ca2634aab794b97d14d575, type: 3}
       propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7641722379425194025, guid: 121e7aa0f1ca2634aab794b97d14d575, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7641722379425194025, guid: 121e7aa0f1ca2634aab794b97d14d575, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7641722379425194025, guid: 121e7aa0f1ca2634aab794b97d14d575, type: 3}
+      propertyPath: m_SizeDelta.x
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7641722379459497552, guid: 121e7aa0f1ca2634aab794b97d14d575, type: 3}

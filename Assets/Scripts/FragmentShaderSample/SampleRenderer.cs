@@ -6,6 +6,7 @@ namespace RuntimeFragmentShader.Sample
     public struct SampleFragmentConstantBuffer
     {
         public float Time;
+        public Vector2 Size;
     }
     
     [RequireComponent(typeof(ShaderRenderer))]
@@ -34,6 +35,7 @@ namespace RuntimeFragmentShader.Sample
         private void Update()
         {
             _constantBuffer.Time = Time.time;
+            _constantBuffer.Size = new Vector2(transform.lossyScale.x, transform.lossyScale.y);
             _shaderRenderer.SetTexture(0, _attachTexture);
             _shaderRenderer.SetConstantBuffer(_constantBuffer);
         }

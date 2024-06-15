@@ -7,9 +7,12 @@ namespace RuntimeFragmentShader.Sample
 {
     public class ShaderEditorView : MonoBehaviour
     {
+        [SerializeField] private bool _compileOnCodeChanged = true;
+        [Space]
         [SerializeField] private NativeShaderExecutorBase _executor;
         [SerializeField] private TMP_InputField _shaderCodeText;
         [SerializeField] private TextMeshProUGUI _highlightedText;
+        [SerializeField] private TextMeshProUGUI _errorText;
         [SerializeField] private Button _compileButton;
         
         private void Start()
@@ -24,7 +27,11 @@ namespace RuntimeFragmentShader.Sample
         {
             if (!_executor.CompileShader(out string error))
             {
-                Debug.LogError(error);
+                _errorText.text = error;
+            }
+            else
+            {
+                _errorText.text = string.Empty;
             }
         }
 
@@ -32,6 +39,11 @@ namespace RuntimeFragmentShader.Sample
         {
             _executor.ShaderCode = text;
             _highlightedText.text = HlslHighliter.Highlight(text);
+
+            if (_compileOnCodeChanged)
+            {
+                OnCompileButtonClicked();
+            }
         }
     }
 }
