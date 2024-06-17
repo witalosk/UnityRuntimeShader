@@ -15,6 +15,8 @@ namespace RuntimeFragmentShader.Sample
         [SerializeField] private TextMeshProUGUI _errorText;
         [SerializeField] private Button _compileButton;
         
+        private int _prevCompileFrame = -1;
+        
         private void Start()
         {
             _compileButton.onClick.AddListener(OnCompileButtonClicked);
@@ -25,6 +27,8 @@ namespace RuntimeFragmentShader.Sample
         
         public void OnCompileButtonClicked()
         {
+            if (_prevCompileFrame == Time.frameCount) return;
+            
             if (!_executor.CompileShader(out string error))
             {
                 _errorText.text = error;
@@ -33,6 +37,8 @@ namespace RuntimeFragmentShader.Sample
             {
                 _errorText.text = string.Empty;
             }
+            
+            _prevCompileFrame = Time.frameCount;
         }
 
         private void OnShaderCodeChanged(string text)

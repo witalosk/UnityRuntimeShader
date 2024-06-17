@@ -26,7 +26,9 @@ namespace RuntimeFragmentShader.Sample
         public SwapBuffer(int count, int stride)
         {
             _readBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, count, stride);
+            _readBuffer.name = "buf1";
             _writeBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, count, stride);
+            _writeBuffer.name = "buf2";
         }
         
         ~SwapBuffer()

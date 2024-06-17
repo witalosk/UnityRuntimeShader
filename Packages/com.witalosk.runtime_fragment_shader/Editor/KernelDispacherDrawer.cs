@@ -31,9 +31,15 @@ namespace RuntimeFragmentShader.Editor
             };
             
             _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos, GUILayout.Height(200));
+            Undo.RecordObject(_kernelDispatcher, "Edit Shader Code");
+
+            EditorGUI.BeginChangeCheck();
             _kernelDispatcher.ShaderCode = _codeEditor.Draw(_kernelDispatcher.ShaderCode, style, GUILayout.ExpandHeight(true));
             EditorGUILayout.EndScrollView();
-
+            if (EditorGUI.EndChangeCheck())
+            {
+                EditorUtility.SetDirty(_kernelDispatcher);
+            }
 
             if (GUILayout.Button("Compile", GUILayout.Height(24f)))
             {

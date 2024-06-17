@@ -91,6 +91,16 @@ void Main (uint3 id : SV_DispatchThreadID)
             Plugin.SetRwBufferToCs(_instanceId, slot, buffer.GetNativeBufferPtr(), buffer.count, buffer.stride);
         }
         
+        public void SetTexture(int slot, RenderTexture rt)
+        {
+            if (_instanceId < 0) return;
+            if (!rt.IsCreated())
+            {
+                rt.Create();
+            }
+            Plugin.SetTextureToCs(_instanceId, slot, rt.GetNativeTexturePtr(), (int)rt.format.GetDxgiFormat());
+        }
+        
         public void Dispatch(int x, int y, int z)
         {
             if (_instanceId < 0) return;

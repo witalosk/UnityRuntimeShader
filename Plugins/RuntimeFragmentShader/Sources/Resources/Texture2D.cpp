@@ -32,3 +32,8 @@ void Texture2D::SetToFragmentShader(ID3D11DeviceContext* context, int slot)
 {
     context->PSSetShaderResources(slot, 1, &_shaderResourceView);
 }
+
+void Texture2D::SetToComputeShader(ID3D11DeviceContext* context, int slot)
+{
+    context->CSSetShaderResources(slot, 1, &_shaderResourceView);
+}

@@ -6,9 +6,9 @@ namespace RuntimeFragmentShader.Editor
     [CustomEditor(typeof(ShaderRenderer))]
     public class ShaderRendererDrawer : UnityEditor.Editor
     {
-        ShaderRenderer _shaderRenderer = null;
-        CodeEditor _codeEditor;
-        Vector2 _scrollPos;
+        private ShaderRenderer _shaderRenderer = null;
+        private CodeEditor _codeEditor;
+        private Vector2 _scrollPos;
         
         private void OnEnable()
         {
@@ -31,7 +31,15 @@ namespace RuntimeFragmentShader.Editor
             };
             
             _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos, GUILayout.Height(200));
+            
+            Undo.RecordObject(_shaderRenderer, "Edit Shader Code");
+            EditorGUI.BeginChangeCheck();
             _shaderRenderer.ShaderCode = _codeEditor.Draw(_shaderRenderer.ShaderCode, style, GUILayout.ExpandHeight(true));
+            if (EditorGUI.EndChangeCheck())
+            {
+                EditorUtility.SetDirty(_shaderRenderer);
+            }
+            
             EditorGUILayout.EndScrollView();
 
             if (GUILayout.Button("Compile", GUILayout.Height(24f)))

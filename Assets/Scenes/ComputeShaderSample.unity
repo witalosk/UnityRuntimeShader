@@ -530,7 +530,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1215282083
 GameObject:
@@ -629,13 +629,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1929721796}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1929721798
 MonoBehaviour:
@@ -663,7 +663,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e7b676eb6f26405387d3c9aa1fbf9fa2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _isActive: 0
+  _isActive: 1
 --- !u!114 &1929721800
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -679,7 +679,7 @@ MonoBehaviour:
   _isActive: 1
   _applyNoiseCs: {fileID: 7200000, guid: 936a7948501d212488c07ed903871b58, type: 3}
   _noiseFrequency: 0.1
-  _noiseScale: 0.02
+  _noiseScale: 0.04
   _noiseSpeed: 0.01
 --- !u!114 &1929721801
 MonoBehaviour:
@@ -728,8 +728,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _computeShaderCode: "#include \"ShaderIncludes/hoge.hlsl\"\r\n\n\ncbuffer cb\n{\n   
-    float _Time;\n    float _DeltaTime;\n};\n\nRWStructuredBuffer<Particle> _ParticleWriteBuffer
-    : register(u0);\n\n\n[numthreads(256, 1, 1)]\r\nvoid Main (uint3 id : SV_DispatchThreadID)\r\n{\r\n   
-    uint pId = id.x;\n    Particle p = _ParticleWriteBuffer[pId];\n\n    // p.velocity
-    += -p.position * 0.1;\n    //p.color = float4(1, 0, 0, 1);\n\n    //_ParticleWriteBuffer[pId]
-    = p;\n}\r\n"
+    float _Time;\n    float _DeltaTime;\n};\n\nRWStructuredBuffer<Particle> _ParticleReadBuffer
+    : register(u0);\nRWStructuredBuffer<Particle> _ParticleWriteBuffer : register(u1);\nTexture2D
+    _Tex : register(t0);\n\n\n[numthreads(256, 1, 1)]\r\nvoid Main (uint3 id : SV_DispatchThreadID)\r\n{\r\n   
+    uint pId = id.x;\n    Particle p = _ParticleReadBuffer[pId];\n\n    p.velocity
+    += -p.position * 0.01 * _DeltaTime;\n    p.color = float4(0, cos(_Time * 5.0
+    + p.uuid) * 0.5 + 0.5, sin(_Time + p.uuid) * 0.5 + 0.5, 1) * 0.1;\n    p.size
+    = (sin(_Time * 0.5 + p.uuid) + 0.5) * 0.1;\n\n    _ParticleWriteBuffer[pId] =
+    p;\n}\r\n"

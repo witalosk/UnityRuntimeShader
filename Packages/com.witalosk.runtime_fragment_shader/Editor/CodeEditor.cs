@@ -7,13 +7,14 @@ namespace RuntimeFragmentShader.Editor
     /// <summary>
     /// https://tips.hecomi.com/entry/2016/10/13/205422
     /// </summary>
+    [Serializable]
     public class CodeEditor
     {
         public Color BackgroundColor { get; set; }
         public Color TextColor { get; set; }
         public Func<string, string> Highlighter { get; set; }
 
-        private string CashedCode { get; set; }
+        [SerializeField] private string _cashedCode;
         private string CachedHighlightedCode { get; set; }
 
         public CodeEditor()
@@ -38,9 +39,9 @@ namespace RuntimeFragmentShader.Editor
 
             code = EditorGUILayout.TextArea(code, backStyle, options);
             
-            if (string.IsNullOrEmpty(CachedHighlightedCode) || (code != CashedCode))
+            if (string.IsNullOrEmpty(CachedHighlightedCode) || (code != _cashedCode))
             {
-                CashedCode = code;
+                _cashedCode = code;
                 CachedHighlightedCode = Highlighter(code);
             }
 

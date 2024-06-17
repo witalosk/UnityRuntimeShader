@@ -52,7 +52,8 @@ namespace RuntimeFragmentShader
         [DllImport("RuntimeFragmentShader")]
         public static extern void SetRwBufferToCs(int id, int slot, IntPtr buffer, int count, int stride);
 
-
+        [DllImport("RuntimeFragmentShader")]
+        public static extern void SetTextureToCs(int id, int slot, IntPtr texture, int format);
 #endregion
     }
 }

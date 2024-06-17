@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using UnityEditor;
+using UnityEditorInternal;
 using UnityEngine;
 
 namespace RuntimeFragmentShader.Sample
@@ -12,7 +14,7 @@ namespace RuntimeFragmentShader.Sample
         [SerializeField] private List<ModuleBase> _modules = new();
         
         private SwapBuffer _particleBuffer;
-
+        
         private void Start()
         {
             _particleBuffer = new SwapBuffer(_particleCount, Marshal.SizeOf<Particle>());
@@ -34,12 +36,22 @@ namespace RuntimeFragmentShader.Sample
             _particleBuffer.Read.SetData(cpuBuffer);
         }
 
+        private int _cped = 3;
         private void Update()
         {
+            if (_cped > 0 && _modules[1].IsActive)
+            {
+                RenderDoc.BeginCaptureRenderDoc(EditorWindow.focusedWindow);
+            }
             foreach (var module in _modules)
             {
                 if (!module.IsActive) continue;
                 module.Execute(_particleBuffer);
+            }
+            if (_modules[1].IsActive && _cped > 0)
+            {
+                RenderDoc.EndCaptureRenderDoc(EditorWindow.focusedWindow);
+                _cped--;
             }
         }
 

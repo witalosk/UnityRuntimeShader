@@ -11,4 +11,5 @@ public:
 
     HRESULT UpdateTexture(ID3D11Device* device, void* tex, int format);
     void SetToFragmentShader(ID3D11DeviceContext* context, int slot);
+    void SetToComputeShader(ID3D11DeviceContext* context, int slot);
 };

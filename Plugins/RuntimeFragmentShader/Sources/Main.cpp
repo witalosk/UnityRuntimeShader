@@ -133,6 +133,12 @@ extern "C"
 		auto dispatcher = g_dispatchers[id];
 		dispatcher->SetRwBuffer(slot, buffer, count, stride);
 	}
+
+	UNITY_INTERFACE_EXPORT void UNITY_INTERFACE_API SetTextureToCs(int id, int slot, void* texture, int format)
+	{
+		auto dispatcher = g_dispatchers[id];
+		dispatcher->SetTexture(slot, texture, format);
+	}
 #pragma endregion
 	
 }
