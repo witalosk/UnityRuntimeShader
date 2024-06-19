@@ -1,0 +1,10 @@
+{
+  "name": "com.witalosk.unity_runtime_shader",
+  "displayName": "Unity Runtime Shader",
+  "version": "0.1.0",
+  "unity": "2021.3",
+  "description": "Compile the HLSL fragment / compute shader at runtime to get the drawn texture or computed buffer.",
+  "author": {
+    "name": "witalosk"
+  }
+}

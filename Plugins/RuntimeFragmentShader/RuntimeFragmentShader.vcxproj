@@ -84,7 +84,7 @@
       <AdditionalDependencies>%(ProjectDir);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\..\Packages\com.witalosk.runtime_fragment_shader\Plugins\x86\</Command>
+      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\..\Packages\com.witalosk.unity_runtime_shader\Plugins\x86\</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -105,7 +105,7 @@
       <AdditionalDependencies>%(ProjectDir);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\..\Packages\com.witalosk.runtime_fragment_shader\Plugins\x86\</Command>
+      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\..\Packages\com.witalosk.unity_runtime_shader\Plugins\x86\</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -122,7 +122,7 @@
       <AdditionalDependencies>%(ProjectDir);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\..\Packages\com.witalosk.runtime_fragment_shader\Plugins\x86_64\</Command>
+      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\..\Packages\com.witalosk.unity_runtime_shader\Plugins\x86_64\</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -143,22 +143,26 @@
       <AdditionalDependencies>%(ProjectDir);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\..\Packages\com.witalosk.runtime_fragment_shader\Plugins\x86_64\</Command>
+      <Command>xcopy /Yq $(TargetPath) $(SolutionDir)..\..\Packages\com.witalosk.unity_runtime_shader\Plugins\x86_64\</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Sources\Resources\Buffer.cpp" />
     <ClCompile Include="Sources\Dispatcher.cpp" />
     <ClCompile Include="Sources\Main.cpp" />
     <ClCompile Include="Sources\Renderer.cpp" />
     <ClCompile Include="Sources\Resources\RwBuffer.cpp" />
     <ClCompile Include="Sources\Resources\Texture2D.cpp" />
+    <ClCompile Include="Sources\ShaderExecutorBase.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Sources\Resources\Buffer.h" />
     <ClInclude Include="Sources\Common.h" />
     <ClInclude Include="Sources\Dispatcher.h" />
     <ClInclude Include="Sources\Renderer.h" />
     <ClInclude Include="Sources\Resources\RwBuffer.h" />
     <ClInclude Include="Sources\Resources\Texture2D.h" />
+    <ClInclude Include="Sources\ShaderExecutorBase.h" />
     <ClInclude Include="Sources\Unity\IUnityGraphics.h" />
     <ClInclude Include="Sources\Unity\IUnityGraphicsD3D11.h" />
     <ClInclude Include="Sources\Unity\IUnityInterface.h" />

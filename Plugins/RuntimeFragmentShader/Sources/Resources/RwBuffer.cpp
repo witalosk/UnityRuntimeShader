@@ -8,14 +8,14 @@ RwBuffer::RwBuffer()
 
 RwBuffer::~RwBuffer()
 {
-    SAFE_RELEASE(_unorderedAccessView);
+    _unorderedAccessView = nullptr;
 }
 
 HRESULT RwBuffer::UpdateBuffer(ID3D11Device* device, void* buffer, int count, int stride)
 {
     if (_unorderedAccessView != nullptr)
     {
-        _unorderedAccessView->Release();
+        _unorderedAccessView.Get()->Release();
         _unorderedAccessView = nullptr;
     }
 
@@ -28,11 +28,6 @@ HRESULT RwBuffer::UpdateBuffer(ID3D11Device* device, void* buffer, int count, in
     _desc.Buffer.NumElements = count;
     _desc.Buffer.Flags = 0;
     
-    return device->CreateUnorderedAccessView(bufferResource, &_desc, &_unorderedAccessView);
-}
-
-void RwBuffer::SetToComputeShader(ID3D11DeviceContext* context, int slot)
-{
-    context->CSSetUnorderedAccessViews(slot, 1, &_unorderedAccessView, nullptr);
+    return device->CreateUnorderedAccessView(bufferResource, &_desc, _unorderedAccessView.GetAddressOf());
 }
 

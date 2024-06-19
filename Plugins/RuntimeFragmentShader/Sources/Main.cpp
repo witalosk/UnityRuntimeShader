@@ -88,6 +88,12 @@ extern "C"
 		auto renderer = g_renderers[id];
 		renderer->SetTexture(slot, texture, format);
 	}
+
+	UNITY_INTERFACE_EXPORT void UNITY_INTERFACE_API SetBuffer(int id, int slot, void* buffer, int count, int stride)
+	{
+		auto renderer = g_renderers[id];
+		renderer->SetBuffer(slot, buffer, count, stride);
+	}
 	
 #pragma endregion
 
@@ -128,11 +134,17 @@ extern "C"
 		dispatcher->SetConstantBuffer(buffer, size);
 	}
 
+	UNITY_INTERFACE_EXPORT void UNITY_INTERFACE_API SetBufferToCs(int id, int slot, void* buffer, int count, int stride)
+	{
+		auto dispatcher = g_dispatchers[id];
+		dispatcher->SetBuffer(slot, buffer, count, stride);
+	}
+
 	UNITY_INTERFACE_EXPORT void UNITY_INTERFACE_API SetRwBufferToCs(int id, int slot, void* buffer, int count, int stride)
 	{
 		auto dispatcher = g_dispatchers[id];
 		dispatcher->SetRwBuffer(slot, buffer, count, stride);
-	}
+	} 
 
 	UNITY_INTERFACE_EXPORT void UNITY_INTERFACE_API SetTextureToCs(int id, int slot, void* texture, int format)
 	{

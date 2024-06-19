@@ -135,8 +135,8 @@
       },
       "url": "https://packages.unity.com"
     },
-    "com.witalosk.runtime_fragment_shader": {
-      "version": "file:com.witalosk.runtime_fragment_shader",
+    "com.witalosk.unity_runtime_shader": {
+      "version": "file:com.witalosk.unity_runtime_shader",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}

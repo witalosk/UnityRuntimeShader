@@ -19,3 +19,5 @@
 #ifndef SAFE_RELEASE
     #define SAFE_RELEASE(a) if (a) { a->Release(); a = NULL; }
 #endif
+
+using Microsoft::WRL::ComPtr;

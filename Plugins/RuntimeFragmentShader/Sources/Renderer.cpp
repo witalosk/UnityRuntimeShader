@@ -1,17 +1,6 @@
 #include "Renderer.h"
 
-Renderer::Renderer(IUnityInterfaces* unity)
-{
-	_unity = unity;
-	Start();
-}
-
-Renderer::~Renderer()
-{
-	Stop();
-}
-
-void Renderer::Start()
+Renderer::Renderer(IUnityInterfaces* unity): ShaderExecutorBase(unity)
 {
 	_isRunning = true;
 	_device = _unity->Get<IUnityGraphicsD3D11>()->GetDevice();
@@ -38,6 +27,25 @@ void Renderer::Start()
 		UNITY_LOG_ERROR(_logger, "[ShaderRenderer] Failed to create input layout");
 	}
 }
+
+Renderer::~Renderer()
+{
+	SAFE_RELEASE(_frameBufferView);
+	SAFE_RELEASE(_vertexBuffer);
+	SAFE_RELEASE(_constantBuffer);
+	SAFE_RELEASE(_vertexShader);
+	SAFE_RELEASE(_pixelShader);
+	SAFE_RELEASE(_inputLayout);
+	SAFE_RELEASE(_rasterState);
+	SAFE_RELEASE(_blendState);
+	SAFE_RELEASE(_depthState);
+	for (auto tex : _textures)
+	{
+		tex.second->~Texture2D();
+	}
+	_isRunning = false;
+}
+
 
 void Renderer::Update()
 {
@@ -73,8 +81,11 @@ void Renderer::Update()
 
 	for (auto tex : _textures)
 	{
-		tex.second->SetToFragmentShader(context, tex.first);
+		ID3D11ShaderResourceView* s = tex.second->GetShaderResourceView();
+		context->PSSetShaderResources(tex.first, 1, &s);
 	}
+
+	
 
 	// OM: set output merger stage
 	context->OMSetRenderTargets(1, &_frameBufferView, nullptr);
@@ -86,28 +97,6 @@ void Renderer::Update()
 	
 	context->Draw(2 * 3, 0);
 	context->Release();
-
-	_renderCount++;
-}
-
-void Renderer::Stop()
-{
-	SAFE_RELEASE(_frameBufferView);
-	SAFE_RELEASE(_vertexBuffer);
-	SAFE_RELEASE(_constantBuffer);
-	SAFE_RELEASE(_vertexShader);
-	SAFE_RELEASE(_pixelShader);
-	SAFE_RELEASE(_inputLayout);
-	SAFE_RELEASE(_rasterState);
-	SAFE_RELEASE(_blendState);
-	SAFE_RELEASE(_depthState);
-	
-	for (auto tex : _textures)
-	{
-		tex.second->~Texture2D();
-	}
-	
-	_isRunning = false;
 }
 
 void Renderer::SetOutputTexture(void* ptr, int width, int height, int format)
@@ -122,35 +111,6 @@ void Renderer::SetOutputTexture(void* ptr, int width, int height, int format)
 		_frameBufferView = nullptr;
 	}
 	_device->CreateRenderTargetView(_texture, new CD3D11_RENDER_TARGET_VIEW_DESC(D3D11_RTV_DIMENSION_TEXTURE2D, static_cast<DXGI_FORMAT>(format)), &_frameBufferView);
-}
-
-void Renderer::SetConstantBuffer(void* buffer, int size)
-{
-	if (size == 0) return;
-	if (size == _constantBufferSize) return;
-	_constantBufferPtr = buffer;
-	
-	if (_constantBuffer != nullptr)
-	{
-		_constantBuffer->Release();
-		_constantBuffer = nullptr;
-	}
-	
-	D3D11_SUBRESOURCE_DATA sr = { 0 };
-	sr.pSysMem = buffer;
-	
-	D3D11_BUFFER_DESC desc = {};
-	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.ByteWidth = size + (size % 16 == 0 ? 0 : 16 - size % 16);
-	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	desc.CPUAccessFlags = 0;
-	HRESULT hr = _device->CreateBuffer(&desc, &sr, &_constantBuffer);
-	if (FAILED(hr))
-	{
-		UNITY_LOG_ERROR(_logger, "[ShaderRenderer] Failed to create constant buffer");
-	}
-
-	_constantBufferSize = size;
 }
 
 void Renderer::CreateResources()
@@ -248,20 +208,6 @@ std::string Renderer::CompilePixelShaderFromString(const std::string& source)
 	return "";
 }
 
-void Renderer::SetTexture(int slot, void* ptr, int format)
-{
-	if (_textures.count(slot) == 0)
-	{
-		_textures[slot] = new Texture2D();
-	}
-
-	HRESULT hr = _textures[slot]->UpdateTexture(_device, ptr, format);
-	if (FAILED(hr))
-	{
-		UNITY_LOG_ERROR(_logger, ("[ShaderRenderer] Failed to update texture: " + std::to_string(hr)).c_str());
-		return;
-	}
-}
 
 ID3DBlob* Renderer::CompileVertexShader()
 {

@@ -728,9 +728,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _computeShaderCode: "#include \"ShaderIncludes/hoge.hlsl\"\r\n\n\ncbuffer cb\n{\n   
-    float _Time;\n    float _DeltaTime;\n};\n\nRWStructuredBuffer<Particle> _ParticleReadBuffer
-    : register(u0);\nRWStructuredBuffer<Particle> _ParticleWriteBuffer : register(u1);\nTexture2D
-    _Tex : register(t0);\n\n\n[numthreads(256, 1, 1)]\r\nvoid Main (uint3 id : SV_DispatchThreadID)\r\n{\r\n   
+    float _Time;\n    float _DeltaTime;\n};\n\nStructuredBuffer<Particle> _ParticleReadBuffer
+    : register(t0);\nRWStructuredBuffer<Particle> _ParticleWriteBuffer : register(u0);\nTexture2D
+    _Tex : register(t1);\n\n\n[numthreads(256, 1, 1)]\r\nvoid Main (uint3 id : SV_DispatchThreadID)\r\n{\r\n   
     uint pId = id.x;\n    Particle p = _ParticleReadBuffer[pId];\n\n    p.velocity
     += -p.position * 0.01 * _DeltaTime;\n    p.color = float4(0, cos(_Time * 5.0
     + p.uuid) * 0.5 + 0.5, sin(_Time + p.uuid) * 0.5 + 0.5, 1) * 0.1;\n    p.size
