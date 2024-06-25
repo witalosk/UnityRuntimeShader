@@ -5,6 +5,8 @@ class RwBuffer
 {
     ComPtr<ID3D11UnorderedAccessView> _unorderedAccessView;
     D3D11_UNORDERED_ACCESS_VIEW_DESC _desc;
+    int _count;
+    int _stride;
 public:
     RwBuffer();
     ~RwBuffer();

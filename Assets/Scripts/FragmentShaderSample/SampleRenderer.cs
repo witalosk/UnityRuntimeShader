@@ -26,7 +26,7 @@ namespace RuntimeFragmentShader.Sample
             {
                 _shaderRenderer = gameObject.AddComponent<ShaderRenderer>();
             }
-            _targetTexture = new RenderTexture(_textureSize.x, _textureSize.y, 0, RenderTextureFormat.ARGBFloat);
+            _targetTexture = new RenderTexture(_textureSize.x, _textureSize.y, 0, RenderTextureFormat.Default);
             _shaderRenderer.TargetTexture = _targetTexture;
 
             GetComponent<Renderer>().material.mainTexture = _targetTexture;

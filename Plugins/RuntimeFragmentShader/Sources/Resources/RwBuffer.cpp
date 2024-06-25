@@ -13,11 +13,19 @@ RwBuffer::~RwBuffer()
 
 HRESULT RwBuffer::UpdateBuffer(ID3D11Device* device, void* buffer, int count, int stride)
 {
+    if (_count == count && _stride == stride && _unorderedAccessView != nullptr)
+    {
+        return S_OK;
+    }
+    
     if (_unorderedAccessView != nullptr)
     {
         _unorderedAccessView.Get()->Release();
         _unorderedAccessView = nullptr;
     }
+
+    _count = count;
+    _stride = stride;
 
     ID3D11Buffer* bufferResource = static_cast<ID3D11Buffer*>(buffer);
     

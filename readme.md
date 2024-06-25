@@ -6,7 +6,7 @@ Compile and execute fragment / compute shader at runtime in Unity.
 This package allows the Unity runtime to compile HLSL code and write the results to a RenderTexture or GraphicsBuffer.
 This would be useful for VJ events or when you want to adjust post effects at work.
 
-It may not work in some environments, so please contact us if this is the case.
+It may not work in some environments, so please contact me if this is the case.
 
 ## Environment
 - **Windows only**

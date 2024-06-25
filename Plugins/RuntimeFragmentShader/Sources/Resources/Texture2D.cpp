@@ -13,11 +13,18 @@ Texture2D::~Texture2D()
 
 HRESULT Texture2D::UpdateTexture(ID3D11Device* device, void* tex, int format)
 {
+    if (_format == format && _shaderResourceView != nullptr)
+    {
+        return S_OK;
+    }
+    
     if (_shaderResourceView != nullptr)
     {
         _shaderResourceView.Get()->Release();
         _shaderResourceView = nullptr;
     }
+
+    _format = format;
     
     ID3D11Texture2D* texture = static_cast<ID3D11Texture2D*>(tex);
     _desc = {};

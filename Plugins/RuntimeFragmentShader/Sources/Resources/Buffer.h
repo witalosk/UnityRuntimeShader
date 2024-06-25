@@ -5,6 +5,8 @@ class Buffer
 {
     ComPtr<ID3D11ShaderResourceView> _shaderResourceView;
     D3D11_SHADER_RESOURCE_VIEW_DESC _desc;
+    int _count;
+    int _stride;
 public:
     Buffer();
     ~Buffer();
