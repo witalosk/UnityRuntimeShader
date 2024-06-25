@@ -37,7 +37,7 @@ namespace RuntimeFragmentShader.Sample
             _constantBuffer.Time = Time.time;
             _constantBuffer.Size = new Vector2(transform.lossyScale.x, transform.lossyScale.y);
             _shaderRenderer.SetTexture(0, _attachTexture);
-            _shaderRenderer.SetConstantBuffer(_constantBuffer);
+            _shaderRenderer.SetConstantBuffer(0, _constantBuffer);
         }
         
         private void OnDestroy()

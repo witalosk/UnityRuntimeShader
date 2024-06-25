@@ -32,7 +32,6 @@ Renderer::~Renderer()
 {
 	SAFE_RELEASE(_frameBufferView);
 	SAFE_RELEASE(_vertexBuffer);
-	SAFE_RELEASE(_constantBuffer);
 	SAFE_RELEASE(_vertexShader);
 	SAFE_RELEASE(_pixelShader);
 	SAFE_RELEASE(_inputLayout);
@@ -73,10 +72,11 @@ void Renderer::Update()
 	context->PSSetShader(_pixelShader, nullptr, 0);
 
 	// Set Additional Resources
-	if (_constantBufferSize > 0 && _constantBuffer != nullptr)
+	for (auto cbuf : _constantBuffers)
 	{
-		context->UpdateSubresource(_constantBuffer, 0, nullptr, _constantBufferPtr, 0, 0);
-		context->PSSetConstantBuffers(0, 1, &_constantBuffer);
+		auto buf = cbuf.second->GetConstantBuffer();
+		context->UpdateSubresource(buf, 0, nullptr, cbuf.second->GetConstantBufferPointer(), 0, 0);
+		context->PSSetConstantBuffers(cbuf.first, 1, &buf);
 	}
 
 	for (auto tex : _textures)
@@ -84,9 +84,7 @@ void Renderer::Update()
 		ID3D11ShaderResourceView* s = tex.second->GetShaderResourceView();
 		context->PSSetShaderResources(tex.first, 1, &s);
 	}
-
 	
-
 	// OM: set output merger stage
 	context->OMSetRenderTargets(1, &_frameBufferView, nullptr);
 	context->OMSetDepthStencilState(_depthState, 0);

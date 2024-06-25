@@ -13,7 +13,7 @@ namespace RuntimeFragmentShader
         protected override IntPtr PluginCompileShaderFromString(IntPtr shaderCode) => Plugin.CompilePixelShaderFromString(_instanceId, shaderCode);
         protected override void PluginSetTexture(int slot, IntPtr texture, int format) => Plugin.SetTexture(_instanceId, slot, texture, format);
         protected override void PluginSetBuffer(int slot, IntPtr buffer, int count, int stride) => Plugin.SetBuffer(_instanceId, slot, buffer, count, stride);
-        protected override void PluginSetConstantBuffer(IntPtr buffer, int size) => Plugin.SetConstantBuffer(_instanceId, buffer, size);
+        protected override void PluginSetConstantBuffer(int slot, IntPtr buffer, int size) => Plugin.SetConstantBuffer(_instanceId, slot, buffer, size);
         
         [SerializeField] private RenderTexture _targetTexture;
         [SerializeField] private bool _renderEveryFrame = true;
@@ -44,20 +44,11 @@ namespace RuntimeFragmentShader
             StartCoroutine(OnRender());
         }
 
-        private void OnDestroy()
+        protected override void OnDestroy()
         {
             _isDestroyed = true;
             Plugin.ReleaseRenderer(_instanceId);
-
-            if (_constantBufferPtr != IntPtr.Zero || _constantBufferSize != 0)
-            {
-                Marshal.FreeHGlobal(_constantBufferPtr);
-            }
-            
-            foreach (var tex in _tex2dDic.Values)
-            {
-                tex.Release();
-            }
+            base.OnDestroy();
         }
 
         public void BlitNow()

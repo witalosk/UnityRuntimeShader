@@ -11,7 +11,7 @@ namespace RuntimeFragmentShader
         protected override IntPtr PluginCompileShaderFromString(IntPtr shaderCode) => Plugin.CompileComputeShaderFromString(_instanceId, shaderCode);
         protected override void PluginSetTexture(int slot, IntPtr texture, int format) => Plugin.SetTextureToCs(_instanceId, slot, texture, format);
         protected override void PluginSetBuffer(int slot, IntPtr buffer, int count, int stride) => Plugin.SetBufferToCs(_instanceId, slot, buffer, count, stride);
-        protected override void PluginSetConstantBuffer(IntPtr buffer, int size) => Plugin.SetConstantBufferToCs(_instanceId, buffer, size);
+        protected override void PluginSetConstantBuffer(int slot, IntPtr buffer, int size) => Plugin.SetConstantBufferToCs(_instanceId, slot, buffer, size);
 
         [Space]
         [SerializeField, HideInInspector]
@@ -32,14 +32,10 @@ void Main (uint3 id : SV_DispatchThreadID)
             }
         }
 
-        private void OnDestroy()
+        protected override void OnDestroy()
         {
             Plugin.ReleaseDispatcher(_instanceId);
-
-            if (_constantBufferPtr != IntPtr.Zero || _constantBufferSize != 0)
-            {
-                Marshal.FreeHGlobal(_constantBufferPtr);
-            }
+            base.OnDestroy();
         }
         
         public void SetRwBuffer(int slot, GraphicsBuffer buffer)

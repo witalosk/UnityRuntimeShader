@@ -3,9 +3,8 @@ using System.Runtime.InteropServices;
 
 namespace RuntimeFragmentShader
 {
-    public static class Plugin
+    internal static class Plugin
     {
-        
 #region Renderer
         [DllImport("RuntimeFragmentShader")]
         public static extern int CreateRenderer();
@@ -26,7 +25,7 @@ namespace RuntimeFragmentShader
         public static extern IntPtr CompilePixelShaderFromString(int id, IntPtr shaderCode);
         
         [DllImport("RuntimeFragmentShader")]
-        public static extern void SetConstantBuffer(int id, IntPtr buffer, int size);
+        public static extern void SetConstantBuffer(int id, int slot, IntPtr buffer, int size);
         
         [DllImport("RuntimeFragmentShader")]
         public static extern void SetBuffer(int id, int slot, IntPtr buffer, int count, int stride);
@@ -50,7 +49,7 @@ namespace RuntimeFragmentShader
         public static extern IntPtr CompileComputeShaderFromString(int id, IntPtr shaderCode);
         
         [DllImport("RuntimeFragmentShader")]
-        public static extern void SetConstantBufferToCs(int id, IntPtr buffer, int size);
+        public static extern void SetConstantBufferToCs(int id, int slot, IntPtr buffer, int size);
         
         [DllImport("RuntimeFragmentShader")]
         public static extern void SetBufferToCs(int id, int slot, IntPtr buffer, int count, int stride);

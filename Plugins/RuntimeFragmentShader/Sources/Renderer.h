@@ -1,11 +1,7 @@
 #pragma once
 
-#include <unordered_map>
-
 #include "Common.h"
 #include "ShaderExecutorBase.h"
-#include "Resources/Buffer.h"
-#include "Resources/Texture2D.h"
 
 class Renderer : public ShaderExecutorBase
 {

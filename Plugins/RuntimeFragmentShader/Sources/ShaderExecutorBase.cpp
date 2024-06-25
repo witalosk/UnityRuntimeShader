@@ -5,15 +5,14 @@ ShaderExecutorBase::ShaderExecutorBase(IUnityInterfaces* unity)
     _unity = unity;
     _device = _unity->Get<IUnityGraphicsD3D11>()->GetDevice();
     _logger = _unity->Get<IUnityLog>();
-
-    _constantBuffer = nullptr;
-    _constantBufferPtr = nullptr;
-    _constantBufferSize = 0;
 }
 
 ShaderExecutorBase::~ShaderExecutorBase()
 {
-    SAFE_RELEASE(_constantBuffer);
+    for (auto cbuf : _constantBuffers)
+    {
+        cbuf.second->~ConstantBuffer();
+    }
 
     for (auto buf : _buffers)
     {
@@ -26,33 +25,18 @@ ShaderExecutorBase::~ShaderExecutorBase()
     }
 }
 
-void ShaderExecutorBase::SetConstantBuffer(void* buffer, int size)
+void ShaderExecutorBase::SetConstantBuffer(int slot, void* buffer, int size)
 {
-    if (size == 0) return;
-    if (size == _constantBufferSize) return;
-    _constantBufferPtr = buffer;
-	
-    if (_constantBuffer != nullptr)
+    if (_constantBuffers.count(slot) == 0)
     {
-        _constantBuffer->Release();
-        _constantBuffer = nullptr;
-    }
-	
-    D3D11_SUBRESOURCE_DATA sr = { 0 };
-    sr.pSysMem = buffer;
-	
-    D3D11_BUFFER_DESC desc = {};
-    desc.Usage = D3D11_USAGE_DEFAULT;
-    desc.ByteWidth = size + (size % 16 == 0 ? 0 : 16 - size % 16);
-    desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-    desc.CPUAccessFlags = 0;
-    HRESULT hr = _device->CreateBuffer(&desc, &sr, &_constantBuffer);
-    if (FAILED(hr))
-    {
-        UNITY_LOG_ERROR(_logger, "[RuntimeShader] Failed to create constant buffer");
+        _constantBuffers[slot] = new ConstantBuffer();
     }
 
-    _constantBufferSize = size;
+    HRESULT hr = _constantBuffers[slot]->UpdateBuffer(_device, buffer, size);
+    if (FAILED(hr))
+    {
+        UNITY_LOG_ERROR(_logger, ("[KernelDispatcher] Failed to update constant buffer: " + std::to_string(hr)).c_str());
+    }
 }
 
 void ShaderExecutorBase::SetBuffer(int slot, void* buffer, int count, int stride)
@@ -66,7 +50,6 @@ void ShaderExecutorBase::SetBuffer(int slot, void* buffer, int count, int stride
     if (FAILED(hr))
     {
         UNITY_LOG_ERROR(_logger, ("[KernelDispatcher] Failed to update buffer: " + std::to_string(hr)).c_str());
-        return;
     }
 }
 
@@ -81,6 +64,5 @@ void ShaderExecutorBase::SetTexture(int slot, void* ptr, int format)
     if (FAILED(hr))
     {
         UNITY_LOG_ERROR(_logger, ("[ShaderRenderer] Failed to update texture: " + std::to_string(hr)).c_str());
-        return;
     }
 }

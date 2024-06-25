@@ -38,7 +38,7 @@ namespace RuntimeFragmentShader.Sample
         {
             _constantBuffer.Time = Time.time;
             _constantBuffer.DeltaTime = Time.deltaTime;
-            _kernelDispatcher.SetConstantBuffer(_constantBuffer);
+            _kernelDispatcher.SetConstantBuffer(0, _constantBuffer);
             _kernelDispatcher.SetTexture(1, _tempTexture);
             _kernelDispatcher.SetBuffer(0, buffer.Read);
             _kernelDispatcher.SetRwBuffer(0, buffer.Write);

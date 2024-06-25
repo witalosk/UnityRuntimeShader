@@ -26,10 +26,11 @@ void Dispatcher::Dispatch(int x, int y, int z)
     context->CSSetShader(_computeShader, nullptr, 0);
 
     // Set Additional Resources
-    if (_constantBufferSize > 0 && _constantBuffer != nullptr)
+    for (auto cbuf : _constantBuffers)
     {
-        context->UpdateSubresource(_constantBuffer, 0, nullptr, _constantBufferPtr, 0, 0);
-        context->CSSetConstantBuffers(0, 1, &_constantBuffer);
+        auto buf = cbuf.second->GetConstantBuffer();
+        context->UpdateSubresource(buf, 0, nullptr, cbuf.second->GetConstantBufferPointer(), 0, 0);
+        context->PSSetConstantBuffers(cbuf.first, 1, &buf);
     }
 
     for (auto buf : _buffers)
@@ -53,8 +54,14 @@ void Dispatcher::Dispatch(int x, int y, int z)
     context->Dispatch(x, y, z);
 
     // Unbind resources after dispatch to avoid unexpected behaviors
+    ID3D11Buffer* nullBuf = nullptr;
     ID3D11ShaderResourceView* nullSRV = nullptr;
     ID3D11UnorderedAccessView* nullUAV = nullptr;
+
+    for (auto& cbuf : _constantBuffers)
+    {
+        context->PSSetConstantBuffers(cbuf.first, 1, &nullBuf);
+    }
 
     for (auto& tex : _textures)
     {

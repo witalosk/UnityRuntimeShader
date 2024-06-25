@@ -12,13 +12,28 @@ namespace RuntimeFragmentShader
         protected abstract IntPtr PluginCompileShaderFromString(IntPtr shaderCode);
         protected abstract void PluginSetTexture(int slot, IntPtr texture, int format);
         protected abstract void PluginSetBuffer(int slot, IntPtr buffer, int count, int stride);
-        protected abstract void PluginSetConstantBuffer(IntPtr buffer, int size);
+        protected abstract void PluginSetConstantBuffer(int slot, IntPtr buffer, int size);
         
         protected readonly Dictionary<int, RenderTexture> _tex2dDic = new();
+        protected readonly Dictionary<int, (int size, IntPtr ptr)> _constantBufferDic = new();
         protected int _instanceId = -1;
-        protected IntPtr _constantBufferPtr = IntPtr.Zero;
-        protected int _constantBufferSize = 0;
-        
+
+        protected virtual void OnDestroy()
+        {
+            foreach (var pair in _constantBufferDic)
+            {
+                if (pair.Value.ptr != IntPtr.Zero)
+                {
+                    Marshal.FreeHGlobal(pair.Value.ptr);
+                }
+            }
+            
+            foreach (var tex in _tex2dDic.Values)
+            {
+                tex.Release();
+            }
+        }
+
         public bool CompileShader(out string error)
         {
             if (_instanceId < 0)
@@ -91,20 +106,32 @@ namespace RuntimeFragmentShader
             throw new NotSupportedException("This texture type is not supported.");
         }
         
-        public void SetConstantBuffer<T>(T buffer) where T : struct
+        public void SetConstantBuffer<T>(int slot, T buffer) where T : struct
         {
             if (_instanceId < 0) return;
-            if (_constantBufferPtr == IntPtr.Zero || _constantBufferSize != Marshal.SizeOf<T>())
+            int size = Marshal.SizeOf<T>();
+            size = size % 16 == 0 ? size : size + 16 - size % 16;
+            
+            if (_constantBufferDic.TryGetValue(slot, out var data))
             {
-                if (_constantBufferPtr != IntPtr.Zero)
+                if (data.size == size)
                 {
-                    Marshal.FreeHGlobal(_constantBufferPtr);
+                    Marshal.StructureToPtr(buffer, data.ptr, size > 0);
+                    return;
                 }
-                _constantBufferPtr = Marshal.AllocHGlobal(Marshal.SizeOf<T>());
-                _constantBufferSize = Marshal.SizeOf<T>();
-                PluginSetConstantBuffer(_constantBufferPtr, Marshal.SizeOf<T>());
+                
+                if (data.ptr != IntPtr.Zero)
+                {
+                    Marshal.FreeHGlobal(data.ptr);
+                }
             }
-            Marshal.StructureToPtr(buffer, _constantBufferPtr, _constantBufferSize > 0);
+
+            data.ptr = Marshal.AllocHGlobal(size);
+            data.size = size;
+            PluginSetConstantBuffer(slot, data.ptr, size);
+            _constantBufferDic[slot] = data;
+            
+            Marshal.StructureToPtr(buffer, data.ptr, size > 0);
         }
         
         public void SetBuffer(int slot, GraphicsBuffer buffer)

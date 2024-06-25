@@ -77,10 +77,10 @@ extern "C"
 		return result;
 	}
 
-	UNITY_INTERFACE_EXPORT void UNITY_INTERFACE_API SetConstantBuffer(int id, void* buffer, int size)
+	UNITY_INTERFACE_EXPORT void UNITY_INTERFACE_API SetConstantBuffer(int id, int slot, void* buffer, int size)
 	{
 		auto renderer = g_renderers[id];
-		renderer->SetConstantBuffer(buffer, size);
+		renderer->SetConstantBuffer(slot, buffer, size);
 	}
 
 	UNITY_INTERFACE_EXPORT void UNITY_INTERFACE_API SetTexture(int id, int slot, void* texture, int format)
@@ -128,10 +128,10 @@ extern "C"
 		dispatcher->Dispatch(x, y, z);
 	}
 
-	UNITY_INTERFACE_EXPORT void UNITY_INTERFACE_API SetConstantBufferToCs(int id, void* buffer, int size)
+	UNITY_INTERFACE_EXPORT void UNITY_INTERFACE_API SetConstantBufferToCs(int id, int slot, void* buffer, int size)
 	{
 		auto dispatcher = g_dispatchers[id];
-		dispatcher->SetConstantBuffer(buffer, size);
+		dispatcher->SetConstantBuffer(slot, buffer, size);
 	}
 
 	UNITY_INTERFACE_EXPORT void UNITY_INTERFACE_API SetBufferToCs(int id, int slot, void* buffer, int count, int stride)
