@@ -6,15 +6,16 @@
 class Renderer : public ShaderExecutorBase
 {
 	ID3D11Texture2D* _texture = nullptr;
-	ID3D11RenderTargetView* _frameBufferView = nullptr;
+	ComPtr<ID3D11RenderTargetView> _frameBufferView = nullptr;
+	ComPtr<ID3D11RenderTargetView> _nextFrameBufferView = nullptr;
 
-	ID3D11Buffer* _vertexBuffer;
-	ID3D11VertexShader* _vertexShader;
-	ID3D11PixelShader* _pixelShader;
-	ID3D11InputLayout* _inputLayout;
-	ID3D11RasterizerState* _rasterState;
-	ID3D11BlendState* _blendState;
-	ID3D11DepthStencilState* _depthState;
+	ComPtr<ID3D11Buffer> _vertexBuffer;
+	ComPtr<ID3D11VertexShader> _vertexShader;
+	ComPtr<ID3D11PixelShader> _pixelShader;
+	ComPtr<ID3D11InputLayout> _inputLayout;
+	ComPtr<ID3D11RasterizerState> _rasterState;
+	ComPtr<ID3D11BlendState> _blendState;
+	ComPtr<ID3D11DepthStencilState> _depthState;
 	
 	bool _isRunning = false;
 	int _width;

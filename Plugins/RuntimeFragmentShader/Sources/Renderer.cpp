@@ -30,14 +30,15 @@ Renderer::Renderer(IUnityInterfaces* unity): ShaderExecutorBase(unity)
 
 Renderer::~Renderer()
 {
-	SAFE_RELEASE(_frameBufferView);
-	SAFE_RELEASE(_vertexBuffer);
-	SAFE_RELEASE(_vertexShader);
-	SAFE_RELEASE(_pixelShader);
-	SAFE_RELEASE(_inputLayout);
-	SAFE_RELEASE(_rasterState);
-	SAFE_RELEASE(_blendState);
-	SAFE_RELEASE(_depthState);
+	_frameBufferView = nullptr;
+	_nextFrameBufferView = nullptr;
+	_vertexBuffer = nullptr;
+	_vertexShader = nullptr;
+	_pixelShader = nullptr;
+	_inputLayout = nullptr;
+	_rasterState = nullptr;
+	_blendState = nullptr;
+	_depthState = nullptr;
 	for (auto tex : _textures)
 	{
 		tex.second->~Texture2D();
@@ -49,27 +50,34 @@ Renderer::~Renderer()
 void Renderer::Update()
 {
 	if (!_isRunning || _pixelShader == nullptr || _unity == nullptr || _texture == nullptr) return;
+
+	if (_nextFrameBufferView != nullptr)
+	{
+		_frameBufferView = nullptr;
+		_frameBufferView = _nextFrameBufferView;
+		_nextFrameBufferView = nullptr;
+	}
 	
 	ID3D11DeviceContext* context;
 	_device->GetImmediateContext(&context);
 
 	// IA: set input assembler data and draw
-	context->IASetInputLayout(_inputLayout);
+	context->IASetInputLayout(_inputLayout.Get());
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	UINT stride = 4 * sizeof(float);
 	UINT offset = 0;
-	context->IASetVertexBuffers(0, 1, &_vertexBuffer, &stride, &offset);
+	context->IASetVertexBuffers(0, 1, _vertexBuffer.GetAddressOf(), &stride, &offset);
 
 	// VS: set vertex shader
-	context->VSSetShader(_vertexShader, nullptr, 0);
+	context->VSSetShader(_vertexShader.Get(), nullptr, 0);
 	
 	// RS: set rasterizer stage
 	const D3D11_VIEWPORT* vp = new D3D11_VIEWPORT{0.0f, 0.0f, static_cast<float>(_width), static_cast<float>(_height), 0.0f, 1.0f};
 	context->RSSetViewports(1, vp);
-	context->RSSetState(_rasterState);
+	context->RSSetState(_rasterState.Get());
 	
 	// PS: set pixel shader
-	context->PSSetShader(_pixelShader, nullptr, 0);
+	context->PSSetShader(_pixelShader.Get(), nullptr, 0);
 
 	// Set Additional Resources
 	for (auto cbuf : _constantBuffers)
@@ -86,12 +94,12 @@ void Renderer::Update()
 	}
 	
 	// OM: set output merger stage
-	context->OMSetRenderTargets(1, &_frameBufferView, nullptr);
-	context->OMSetDepthStencilState(_depthState, 0);
-	context->OMSetBlendState(_blendState, nullptr, 0xFFFFFFFF);
+	context->OMSetRenderTargets(1, _frameBufferView.GetAddressOf(), nullptr);
+	context->OMSetDepthStencilState(_depthState.Get(), 0);
+	context->OMSetBlendState(_blendState.Get(), nullptr, 0xFFFFFFFF);
 	
 	FLOAT backgroundColor[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
-	context->ClearRenderTargetView(_frameBufferView, backgroundColor);
+	context->ClearRenderTargetView(_frameBufferView.Get(), backgroundColor);
 	
 	context->Draw(2 * 3, 0);
 	context->Release();
@@ -103,12 +111,11 @@ void Renderer::SetOutputTexture(void* ptr, int width, int height, int format)
 	_width = width;
 	_height = height;
 
-	if (_frameBufferView != nullptr)
+	if (_nextFrameBufferView != nullptr)
 	{
-		_frameBufferView->Release();
-		_frameBufferView = nullptr;
+		_nextFrameBufferView = nullptr;
 	}
-	_device->CreateRenderTargetView(_texture, new CD3D11_RENDER_TARGET_VIEW_DESC(D3D11_RTV_DIMENSION_TEXTURE2D, static_cast<DXGI_FORMAT>(format)), &_frameBufferView);
+	_device->CreateRenderTargetView(_texture, new CD3D11_RENDER_TARGET_VIEW_DESC(D3D11_RTV_DIMENSION_TEXTURE2D, static_cast<DXGI_FORMAT>(format)), _nextFrameBufferView.GetAddressOf());
 }
 
 void Renderer::CreateResources()
@@ -131,7 +138,7 @@ void Renderer::CreateResources()
 	
 	D3D11_SUBRESOURCE_DATA sr = { 0 };
 	sr.pSysMem = vertexData;
-	HRESULT hr = _device->CreateBuffer(&desc, &sr, &_vertexBuffer);
+	HRESULT hr = _device->CreateBuffer(&desc, &sr, _vertexBuffer.GetAddressOf());
 	if (FAILED(hr))
 	{
 		UNITY_LOG_ERROR(_logger, "[ShaderRenderer] Failed to create vertex buffer");
@@ -143,7 +150,7 @@ void Renderer::CreateResources()
 	rsdesc.FillMode = D3D11_FILL_SOLID;
 	rsdesc.CullMode = D3D11_CULL_NONE;
 	rsdesc.DepthClipEnable = TRUE;
-	hr = _device->CreateRasterizerState(&rsdesc, &_rasterState);
+	hr = _device->CreateRasterizerState(&rsdesc, _rasterState.GetAddressOf());
 	if (FAILED(hr))
 	{
 		UNITY_LOG_ERROR(_logger, "[ShaderRenderer] Failed to create rasterizer state");
@@ -155,7 +162,7 @@ void Renderer::CreateResources()
 	dsdesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
 	// dsdesc.DepthFunc = GetUsesReverseZ() ? D3D11_COMPARISON_GREATER_EQUAL : D3D11_COMPARISON_LESS_EQUAL;
 	dsdesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
-	hr = _device->CreateDepthStencilState(&dsdesc, &_depthState);
+	hr = _device->CreateDepthStencilState(&dsdesc, _depthState.GetAddressOf());
 	if (FAILED(hr))
 	{
 		UNITY_LOG_ERROR(_logger, "[ShaderRenderer] Failed to create depth stencil state");
@@ -165,7 +172,7 @@ void Renderer::CreateResources()
 	memset(&bdesc, 0, sizeof(bdesc));
 	bdesc.RenderTarget[0].BlendEnable = FALSE;
 	bdesc.RenderTarget[0].RenderTargetWriteMask = 0xF;
-	hr = _device->CreateBlendState(&bdesc, &_blendState);
+	hr = _device->CreateBlendState(&bdesc, _blendState.GetAddressOf());
 	if (FAILED(hr))
 	{
 		UNITY_LOG_ERROR(_logger, "[ShaderRenderer] Failed to create blend state");
@@ -195,7 +202,7 @@ std::string Renderer::CompilePixelShaderFromString(const std::string& source)
 		return "Unknown compile error";
 	}
 
-	hr = _device->CreatePixelShader(compiledShader->GetBufferPointer(), compiledShader->GetBufferSize(), nullptr, &_pixelShader);
+	hr = _device->CreatePixelShader(compiledShader->GetBufferPointer(), compiledShader->GetBufferSize(), nullptr, _pixelShader.GetAddressOf());
 
 	if (FAILED(hr))
 	{
@@ -221,7 +228,7 @@ ID3DBlob* Renderer::CompileVertexShader()
 		return nullptr;
 	}
 
-	hr = _device->CreateVertexShader(compiledShader->GetBufferPointer(), compiledShader->GetBufferSize(), nullptr, &_vertexShader);
+	hr = _device->CreateVertexShader(compiledShader->GetBufferPointer(), compiledShader->GetBufferSize(), nullptr, _vertexShader.GetAddressOf());
 	
 	if (FAILED(hr))
 	{

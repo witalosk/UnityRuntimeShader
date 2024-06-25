@@ -1,8 +1,8 @@
 #pragma once
 
 #include <d3d11.h>
+#include <d3d11_3.h>
 #include <thread>
-#include <mutex>
 #include <d3dcompiler.h>
 #include <string>
 #include <vector>
