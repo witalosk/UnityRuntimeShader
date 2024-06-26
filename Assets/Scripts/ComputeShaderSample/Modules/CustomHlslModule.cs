@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 namespace RuntimeFragmentShader.Sample
@@ -14,9 +13,6 @@ namespace RuntimeFragmentShader.Sample
         private SampleComputeConstantBuffer _constantBuffer;
         private KernelDispatcher _kernelDispatcher;
         
-        private GraphicsBuffer _tempBuffer;
-        RenderTexture _tempTexture;
-        
         private void Start()
         {
             _kernelDispatcher = GetComponent<KernelDispatcher>();
@@ -24,21 +20,13 @@ namespace RuntimeFragmentShader.Sample
             {
                 _kernelDispatcher = gameObject.AddComponent<KernelDispatcher>();
             }
-            
-            _tempTexture = new RenderTexture(1024, 1024, 0, RenderTextureFormat.ARGB32);
         }
-
-        private void OnDestroy()
-        {
-            DestroyImmediate(_tempTexture);
-        }
-
+        
         public override void Execute(SwapBuffer buffer)
         {
             _constantBuffer.Time = Time.time;
             _constantBuffer.DeltaTime = Time.deltaTime;
             _kernelDispatcher.SetConstantBuffer(0, _constantBuffer);
-            _kernelDispatcher.SetTexture(1, _tempTexture);
             _kernelDispatcher.SetBuffer(0, buffer.Read);
             _kernelDispatcher.SetRwBuffer(0, buffer.Write);
             _kernelDispatcher.DispatchDesired(buffer.Read.count);
