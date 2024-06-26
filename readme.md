@@ -1,7 +1,7 @@
 # Unity Runtime Shader
 Compile and execute fragment / compute shader at runtime in Unity.
 
-[//]: # (![thumbnail]&#40;./ScreenShots/urs.png&#41;)
+![thumbnail](./Screenshots/sample_compute.png)
 
 This package allows the Unity runtime to compile HLSL code and write the results to a RenderTexture or GraphicsBuffer.
 This would be useful for VJ events or when you want to adjust post effects at work.
@@ -21,6 +21,7 @@ It may not work in some environments, so please contact me if this is the case.
 
 ## Usage
 ### Fragment Shader
+![thumbnail](./Screenshots/sample_fragment.png)
 1. Add `ShaderRenderer` component to your GameObject.
 2. Assign a RenderTexture to the `ShaderRenderer.TargetTexture` field.
 3. If you want to pass a texture / buffer to the shader, assign it to the `ShaderRenderer.SetTexture()` / `ShaderRenderer.SetBuffer()` / `ShaderRenderer.SetConstantBuffer()` method.
@@ -53,6 +54,7 @@ It may not work in some environments, so please contact me if this is the case.
 For details, please refer to the FragmentShaderSample scene.
 
 ### Compute Shader
+![thumbnail](./Screenshots/sample_compute.png)
 1. Add `KernelDispatcher` component to your GameObject.
 2. If you want to pass a texture / buffer to the shader, assign it to the `KernelDispatcher.SetTexture()` / `KernelDispatcher.SetBuffer()` / `KernelDispatcher.SetRwBuffer()` / `KernelDispatcher.SetConstantBuffer()` method.
 3. Compile shader with `KernelDispatcher.CompileShaderFromString(string shaderCode, out string error);`
