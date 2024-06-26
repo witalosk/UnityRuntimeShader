@@ -22,7 +22,7 @@ namespace UnityRuntimeShader
         [SerializeField, HideInInspector]
         private string _fragmentShaderCode = @"float4 Frag(VsOutput input) : SV_TARGET
 {
-	return float4(input.uv, 1.0 - input.uv.x, 1.0);
+    return float4(input.uv, 1.0 - input.uv.x, 1.0);
 }";
         
         private bool _isDestroyed = false;

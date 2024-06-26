@@ -19,6 +19,8 @@ It may not work in some environments, so please contact me if this is the case.
 3. Select "Add package from git URL..."
 4. Enter `https://github.com/witalosk/UnityRuntimeShader.git?path=Packages/com.witalosk.unity_runtime_shader`
 
+Note: If you want to use the sample scenes, you have to clone this repository and open the project.
+
 ## Usage
 ### Fragment Shader
 ![thumbnail](./Screenshots/sample_fragment.png)
