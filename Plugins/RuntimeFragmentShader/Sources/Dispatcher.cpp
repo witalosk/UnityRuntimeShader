@@ -62,7 +62,7 @@ void Dispatcher::Dispatch(int x, int y, int z)
 
     for (auto& cbuf : _constantBuffers)
     {
-        context->PSSetConstantBuffers(cbuf.first, 1, &nullBuf);
+        context->CSSetConstantBuffers(cbuf.first, 1, &nullBuf);
     }
 
     for (auto& tex : _textures)

@@ -214,16 +214,17 @@ MonoBehaviour:
     0.3), t);\r\n}\r\n\r\nfloat4 Frag(VsOutput input) : SV_TARGET\r\n{\r\n    float2
     uv = (input.uv * 2 - 1) * 0.5;\r\n    float ratio = size.x / size.y;\r\n    uv
     *= float2(max(1, ratio), max(1, 1 / ratio));\r\n\r\n    float2 uv0 = uv;\r\n   
-    float d0 = length(uv);\r\n    float t = floor(time) + pow(frac(time * 2), 0.3);\r\n\r\n   
-    float3 col = (1 -  _Texture.Sample(_TextureSampler, input.uv + float2(Noise(time
-    + uv.y), 0) * 0.1).rgb) * max(0.0, -sin(time));\r\n    col += 0.01 / abs(SdTriangle(Rotate(uv0,
-    2 * t * PI), 0.2)) * GetColor(time * 3);    \r\n    \r\n    float zoom = 0.2
-    + sin01(time * 0.1 + t * 0.1 + d0) * 1.5;\r\n    uv *= zoom;\r\n\r\n    for (float
-    i  = 0.0; i < 6.0; i += 1)\r\n    {\r\n        float2 inner = uv * (1.5 + i *
-    0.5);\r\n        float2 quo = floor(inner);\r\n        uv = frac(inner) - 0.5;\r\n       
-    \r\n        col += pow((0.07 + Noise(t * 20) * 0.002) / abs(Dist(uv, sin(t *
-    2 * PI + i) * 0.5 + 0.5 + d0 * 0.1)), 1.3)\r\n*\r\nGetColor(i + time + d0 + quo.y)
-    * 0.1 * exp(-i-1);\r\n    }\r\n\r\n    \r\n    return float4(col, 1.0);\r\n}"
+    float d0 = length(uv);\r\n    float t0 = time * 2;\n    float t = floor(t0) +
+    pow(frac(t0), 0.3);\r\n\r\n    float3 col = (1 -  _Texture.Sample(_TextureSampler,
+    input.uv + float2(Noise(time + uv.y), 0) * 0.1).rgb) * max(0.0, -sin(time));\r\n   
+    col += 0.01 / abs(SdTriangle(Rotate(uv0, 2 * t * PI), 0.2)) * GetColor(time *
+    3);    \r\n    \r\n    float zoom = 0.2 + sin01(time * 0.1 + t * 0.1 + d0) *
+    1.5;\r\n    uv *= zoom;\r\n\r\n    for (float i  = 0.0; i < 6.0; i += 1)\r\n   
+    {\r\n        float2 inner = uv * (1.5 + i * 0.5);\r\n        float2 quo = floor(inner);\r\n       
+    uv = frac(inner) - 0.5;\r\n        \r\n        col += pow((0.07 + Noise(t * 20)
+    * 0.002) / abs(Dist(uv, sin(t * 2 * PI + i) * 0.5 + 0.5 + d0 * 0.1)), 1.3)\r\n*\r\nGetColor(i
+    + time + d0 + quo.y) * 0.1 * exp(-i-1);\r\n    }\r\n\r\n    \r\n    return float4(col,
+    1.0);\r\n}"
 --- !u!64 &351748723
 MeshCollider:
   m_ObjectHideFlags: 0
