@@ -1,7 +1,7 @@
 # Unity Runtime Shader
 Compile and execute fragment / compute shader at runtime in Unity.
 
-![thumbnail](./Screenshots/sample_compute.png)
+![sample_compute](https://github.com/witalosk/UnityRuntimeShader/assets/23546865/0769f8ad-a885-482f-b38a-642593e9222e)
 
 This package allows the Unity runtime to compile HLSL code and write the results to a RenderTexture or GraphicsBuffer.
 This would be useful for VJ events or when you want to adjust post effects at work.
@@ -23,7 +23,7 @@ Note: If you want to use the sample scenes, you have to clone this repository an
 
 ## Usage
 ### Fragment Shader
-![thumbnail](./Screenshots/sample_fragment.png)
+![sample_fragment](https://github.com/witalosk/UnityRuntimeShader/assets/23546865/a4e54575-5563-43cd-b8e0-4df9dd4562b3)
 1. Add `ShaderRenderer` component to your GameObject.
 2. Assign a RenderTexture to the `ShaderRenderer.TargetTexture` field.
 3. If you want to pass a texture / buffer to the shader, assign it to the `ShaderRenderer.SetTexture()` / `ShaderRenderer.SetBuffer()` / `ShaderRenderer.SetConstantBuffer()` method.
@@ -56,7 +56,7 @@ Note: If you want to use the sample scenes, you have to clone this repository an
 For details, please refer to the FragmentShaderSample scene.
 
 ### Compute Shader
-![thumbnail](./Screenshots/sample_compute.png)
+![sample_compute](https://github.com/witalosk/UnityRuntimeShader/assets/23546865/0769f8ad-a885-482f-b38a-642593e9222e)
 1. Add `KernelDispatcher` component to your GameObject.
 2. If you want to pass a texture / buffer to the shader, assign it to the `KernelDispatcher.SetTexture()` / `KernelDispatcher.SetBuffer()` / `KernelDispatcher.SetRwBuffer()` / `KernelDispatcher.SetConstantBuffer()` method.
 3. Compile shader with `KernelDispatcher.CompileShaderFromString(string shaderCode, out string error);`
