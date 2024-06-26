@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using UnityEngine;
 
-namespace RuntimeFragmentShader
+namespace UnityRuntimeShader
 {
     public abstract class NativeShaderExecutorBase : MonoBehaviour
     {

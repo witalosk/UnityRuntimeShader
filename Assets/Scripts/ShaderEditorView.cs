@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace RuntimeFragmentShader.Sample
+namespace UnityRuntimeShader.Sample
 {
     public class ShaderEditorView : MonoBehaviour
     {

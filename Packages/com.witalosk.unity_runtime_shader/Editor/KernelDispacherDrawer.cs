@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace RuntimeFragmentShader.Editor
+namespace UnityRuntimeShader.Editor
 {
     [CustomEditor(typeof(KernelDispatcher))]
     public class KernelDispatcherDrawer : UnityEditor.Editor

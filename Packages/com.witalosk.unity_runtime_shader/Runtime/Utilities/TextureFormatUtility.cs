@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace RuntimeFragmentShader
+namespace UnityRuntimeShader
 {
     public enum DxgiFormat
     {

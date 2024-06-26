@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEditor;
 using System;
 
-namespace RuntimeFragmentShader.Editor
+namespace UnityRuntimeShader.Editor
 {
     /// <summary>
     /// https://tips.hecomi.com/entry/2016/10/13/205422

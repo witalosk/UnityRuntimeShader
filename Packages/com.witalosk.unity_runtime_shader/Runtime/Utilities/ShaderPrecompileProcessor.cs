@@ -2,7 +2,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
-namespace RuntimeFragmentShader
+namespace UnityRuntimeShader
 {
     public static class ShaderPrecompileProcessor
     {

@@ -2,7 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using UnityEngine;
 
-namespace RuntimeFragmentShader
+namespace UnityRuntimeShader
 {
     public class KernelDispatcher : NativeShaderExecutorBase
     {

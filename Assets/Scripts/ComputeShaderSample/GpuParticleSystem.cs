@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
 
-namespace RuntimeFragmentShader.Sample
+namespace UnityRuntimeShader.Sample
 {
     public class GpuParticleSystem : MonoBehaviour
     {

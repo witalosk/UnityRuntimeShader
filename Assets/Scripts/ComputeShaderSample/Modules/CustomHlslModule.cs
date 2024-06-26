@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace RuntimeFragmentShader.Sample
+namespace UnityRuntimeShader.Sample
 {
     public struct SampleComputeConstantBuffer
     {

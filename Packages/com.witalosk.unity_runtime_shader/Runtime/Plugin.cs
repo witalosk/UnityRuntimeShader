@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace RuntimeFragmentShader
+namespace UnityRuntimeShader
 {
     internal static class Plugin
     {
