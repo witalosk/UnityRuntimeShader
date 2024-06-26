@@ -41,7 +41,7 @@ namespace RuntimeFragmentShader.Sample
             _kernelDispatcher.SetTexture(1, _tempTexture);
             _kernelDispatcher.SetBuffer(0, buffer.Read);
             _kernelDispatcher.SetRwBuffer(0, buffer.Write);
-            _kernelDispatcher.Dispatch(Mathf.CeilToInt(buffer.Read.count / 256f), 1, 1);
+            _kernelDispatcher.DispatchDesired(buffer.Read.count);
             buffer.Swap();
         }
     }

@@ -44,7 +44,7 @@ namespace RuntimeFragmentShader.Sample
         private void OnShaderCodeChanged(string text)
         {
             _executor.ShaderCode = text;
-            _highlightedText.text = HlslHighliter.Highlight(text);
+            _highlightedText.text = HlslHighlighter.Highlight(text);
 
             if (_compileOnCodeChanged)
             {

@@ -19,6 +19,9 @@ namespace RuntimeFragmentShader
     public static class TextureFormatUtility
     {
 
+        /// <summary>
+        /// Get the DXGI format from the Render texture format.
+        /// </summary>
         public static DxgiFormat GetDxgiFormat(this RenderTextureFormat textureFormat)
         {
             switch (textureFormat)
@@ -44,6 +47,9 @@ namespace RuntimeFragmentShader
             }
         }
         
+        /// <summary>
+        /// Get the DXGI format from the Texture format.
+        /// </summary>
         public static DxgiFormat GetDxgiFormat(this TextureFormat textureFormat)
         {
             switch (textureFormat)

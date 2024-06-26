@@ -7,7 +7,16 @@ namespace RuntimeFragmentShader
     public static class ShaderPrecompileProcessor
     {
         /// <summary>
-        /// Process the include directive in the shader code.
+        /// Remove comments from the shader code.
+        /// </summary>
+        public static string RemoveComments(string shaderCode)
+        {
+            return Regex.Replace(Regex.Replace(shaderCode, @"/\*.*?\*/", "", RegexOptions.Singleline), @"//.*", "");
+        }
+        
+        /// <summary>
+        /// Process the include directive in the shader code.<br/>
+        /// Note: Before execute this method, you must remove comments from the shader code.
         /// </summary>
         public static string ProcessInclude(string shaderCode, string includePath = null)
         {
@@ -24,11 +33,12 @@ namespace RuntimeFragmentShader
         }
 
         /// <summary>
-        /// Get the kernel thread group sizes from the shader code.
+        /// Get the kernel thread group sizes from the shader code.<br/>
+        /// Note: Before execute this method, you must remove comments from the shader code.
         /// </summary>
         public static Vector3Int GetKernelThreadGroupSizes(string shaderCode)
         {
-            var match = Regex.Match(shaderCode, @"^(?!//)\[numthreads\((\d+),\s*(\d+),\s*(\d+)\)\]");
+            var match = Regex.Match(shaderCode, @"\[numthreads\((\d+),\s*(\d+),\s*(\d+)\)\]");
             if (match.Success)
             {
                 return new Vector3Int(
@@ -38,7 +48,9 @@ namespace RuntimeFragmentShader
                 );
             }
 
-            return Vector3Int.zero;
+            Debug.LogError($"[ShaderPrecompileProcessor] Kernel thread group sizes not found in the shader code.");
+            
+            return Vector3Int.one;
         }
     }
 }

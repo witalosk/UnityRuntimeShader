@@ -15,7 +15,7 @@ namespace RuntimeFragmentShader.Editor
             _kernelDispatcher = target as KernelDispatcher;
             _codeEditor = new CodeEditor
             {
-                Highlighter = HlslHighliter.Highlight
+                Highlighter = HlslHighlighter.Highlight
             };
         }
 

@@ -34,7 +34,12 @@ namespace RuntimeFragmentShader
             }
         }
 
-        public bool CompileShader(out string error)
+        /// <summary>
+        /// Compile shader.
+        /// </summary>
+        /// <param name="error">Error message.</param>
+        /// <returns>True if the shader is compiled successfully.</returns>
+        public virtual bool CompileShader(out string error)
         {
             if (_instanceId < 0)
             {
@@ -54,13 +59,25 @@ namespace RuntimeFragmentShader
             error = null;
             return true;
         }
-        
+
+        /// <summary>
+        /// Compile shader.
+        /// </summary>
+        /// <param name="shaderCode">Code to compile.</param>
+        /// <param name="error">Error message.</param>
+        /// <returns>True if the shader is compiled successfully.</returns>
         public bool CompileShaderFromString(string shaderCode, out string error)
         {
             ShaderCode = shaderCode;
             return CompileShader(out error);
         }
         
+        /// <summary>
+        /// Set texture to shader.
+        /// </summary>
+        /// <param name="slot">Target slot in shader. In the shader, it is declared as "Texture2D _MainTex : register(t[slot]);"</param>
+        /// <param name="texture"></param>
+        /// <exception cref="NotSupportedException"></exception>
         public void SetTexture(int slot, Texture texture)
         {
             if (_instanceId < 0 || texture == null) return;
@@ -106,6 +123,11 @@ namespace RuntimeFragmentShader
             throw new NotSupportedException("This texture type is not supported.");
         }
         
+        /// <summary>
+        /// Set constant buffer to compute shader.
+        /// </summary>
+        /// <param name="slot">Target slot in Compute Buffer. In the shader, it is declared as "cbuffer cb : register(b[slot]);"</param>
+        /// <param name="buffer">Buffer to set.</param>
         public void SetConstantBuffer<T>(int slot, T buffer) where T : struct
         {
             if (_instanceId < 0) return;
@@ -134,6 +156,11 @@ namespace RuntimeFragmentShader
             Marshal.StructureToPtr(buffer, data.ptr, size > 0);
         }
         
+        /// <summary>
+        /// Set readonly buffer to compute shader.
+        /// </summary>
+        /// <param name="slot">Buffer slot. In the shader, it is declared as StructuredBuffer&lt;T&gt; _Buffer : register(t[slot]);</param>
+        /// <param name="buffer">Buffer to set.</param>
         public void SetBuffer(int slot, GraphicsBuffer buffer)
         {
             if (_instanceId < 0) return;
