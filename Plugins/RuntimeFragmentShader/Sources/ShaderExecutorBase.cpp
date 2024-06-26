@@ -1,5 +1,7 @@
 #include "ShaderExecutorBase.h"
 
+using namespace UnityRuntimeShader;
+
 ShaderExecutorBase::ShaderExecutorBase(IUnityInterfaces* unity)
 {
     _unity = unity;

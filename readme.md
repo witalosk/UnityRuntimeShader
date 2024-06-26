@@ -21,7 +21,7 @@ It may not work in some environments, so please contact me if this is the case.
 
 ## Usage
 ### Fragment Shader
-1. Add `Shader Renderer` component to your GameObject.
+1. Add `ShaderRenderer` component to your GameObject.
 2. Assign a RenderTexture to the `ShaderRenderer.TargetTexture` field.
 3. If you want to pass a texture / buffer to the shader, assign it to the `ShaderRenderer.SetTexture()` / `ShaderRenderer.SetBuffer()` / `ShaderRenderer.SetConstantBuffer()` method.
 4. Compile shader with `ShaderRenderer.CompileShaderFromString(string shaderCode, out string error);`
@@ -44,7 +44,7 @@ It may not work in some environments, so please contact me if this is the case.
     {
         _constantBuffer.Time = Time.time;
         _constantBuffer.Size = new Vector2(transform.lossyScale.x, transform.lossyScale.y);
-        _shaderRenderer.SetConstantBuffer(_constantBuffer);
+        _shaderRenderer.SetConstantBuffer(0, _constantBuffer);
         _shaderRenderer.SetTexture(0, _attachTexture);
         _shaderRenderer.SetBuffer(0, _graphicsBuffer);
     }
@@ -53,7 +53,7 @@ It may not work in some environments, so please contact me if this is the case.
 For details, please refer to the FragmentShaderSample scene.
 
 ### Compute Shader
-1. Add `Kernel Dispatcher` component to your GameObject.
+1. Add `KernelDispatcher` component to your GameObject.
 2. If you want to pass a texture / buffer to the shader, assign it to the `KernelDispatcher.SetTexture()` / `KernelDispatcher.SetBuffer()` / `KernelDispatcher.SetRwBuffer()` / `KernelDispatcher.SetConstantBuffer()` method.
 3. Compile shader with `KernelDispatcher.CompileShaderFromString(string shaderCode, out string error);`
 
@@ -73,7 +73,7 @@ For details, please refer to the FragmentShaderSample scene.
     {
         _constantBuffer.Time = Time.time;
         _constantBuffer.DeltaTime = Time.deltaTime;
-        _kernelDispatcher.SetConstantBuffer(_constantBuffer);
+        _kernelDispatcher.SetConstantBuffer(0, _constantBuffer);
         _kernelDispatcher.SetBuffer(0, _readBuffer);
         _kernelDispatcher.SetRwBuffer(0, _writeBuffer);
         _kernelDispatcher.SetTexture(1, _texture1);

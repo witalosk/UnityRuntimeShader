@@ -1,5 +1,7 @@
 #include "Renderer.h"
 
+using namespace UnityRuntimeShader;
+
 Renderer::Renderer(IUnityInterfaces* unity): ShaderExecutorBase(unity)
 {
 	_isRunning = true;

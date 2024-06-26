@@ -1,5 +1,7 @@
 #include "RwBuffer.h"
 
+using namespace UnityRuntimeShader;
+
 RwBuffer::RwBuffer()
 {
     _unorderedAccessView = nullptr;

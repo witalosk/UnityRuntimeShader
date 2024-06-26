@@ -1,5 +1,7 @@
 #include "Dispatcher.h"
 
+using namespace UnityRuntimeShader;
+
 Dispatcher::Dispatcher(IUnityInterfaces* unity): ShaderExecutorBase(unity)
 {
     
@@ -7,7 +9,7 @@ Dispatcher::Dispatcher(IUnityInterfaces* unity): ShaderExecutorBase(unity)
 
 Dispatcher::~Dispatcher()
 {
-    SAFE_RELEASE(_computeShader);
+    _computeShader = nullptr;
 
     for (auto buf : _rwBuffers)
     {
@@ -23,14 +25,14 @@ void Dispatcher::Dispatch(int x, int y, int z)
     _device->GetImmediateContext(&context);
 
     // CS: Set the shader
-    context->CSSetShader(_computeShader, nullptr, 0);
+    context->CSSetShader(_computeShader.Get(), nullptr, 0);
 
     // Set Additional Resources
     for (auto cbuf : _constantBuffers)
     {
         auto buf = cbuf.second->GetConstantBuffer();
         context->UpdateSubresource(buf, 0, nullptr, cbuf.second->GetConstantBufferPointer(), 0, 0);
-        context->PSSetConstantBuffers(cbuf.first, 1, &buf);
+        context->CSSetConstantBuffers(cbuf.first, 1, &buf);
     }
 
     for (auto buf : _buffers)
@@ -121,7 +123,7 @@ std::string Dispatcher::CompileComputeShaderFromString(const std::string& source
         return "Unknown compile error";
     }
 
-    hr = _device->CreateComputeShader(compiledShader->GetBufferPointer(), compiledShader->GetBufferSize(), nullptr, &_computeShader);
+    hr = _device->CreateComputeShader(compiledShader->GetBufferPointer(), compiledShader->GetBufferSize(), nullptr, _computeShader.GetAddressOf());
 
     if (FAILED(hr))
     {

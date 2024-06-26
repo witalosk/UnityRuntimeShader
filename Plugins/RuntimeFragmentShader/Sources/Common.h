@@ -16,8 +16,4 @@
 #include "Unity/IUnityGraphicsD3D11.h"
 #include "Unity/IUnityLog.h"
 
-#ifndef SAFE_RELEASE
-    #define SAFE_RELEASE(a) if (a) { a->Release(); a = NULL; }
-#endif
-
 using Microsoft::WRL::ComPtr;

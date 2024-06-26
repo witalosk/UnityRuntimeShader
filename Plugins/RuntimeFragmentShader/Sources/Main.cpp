@@ -7,6 +7,8 @@
 #define UNITY_INTERFACE_API __stdcall
 #define UNITY_INTERFACE_EXPORT __declspec(dllexport)
 
+using namespace UnityRuntimeShader;
+
 namespace
 {
 	IUnityInterfaces* g_unity = nullptr;

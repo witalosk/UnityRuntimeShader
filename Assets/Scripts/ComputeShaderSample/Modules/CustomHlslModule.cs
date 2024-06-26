@@ -16,7 +16,6 @@ namespace RuntimeFragmentShader.Sample
         
         private GraphicsBuffer _tempBuffer;
         RenderTexture _tempTexture;
-
         
         private void Start()
         {

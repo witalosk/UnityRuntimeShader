@@ -1,5 +1,7 @@
 #include "Texture2D.h"
 
+using namespace UnityRuntimeShader;
+
 Texture2D::Texture2D()
 {
     _desc = {};

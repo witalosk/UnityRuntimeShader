@@ -1,5 +1,7 @@
 #include "ConstantBuffer.h"
 
+using namespace UnityRuntimeShader;
+
 ConstantBuffer::ConstantBuffer()
 {
     _constantBufferPointer = nullptr;

@@ -1,5 +1,7 @@
 #include "Buffer.h"
 
+using namespace UnityRuntimeShader;
+
 Buffer::Buffer()
 {
     _shaderResourceView = nullptr;
