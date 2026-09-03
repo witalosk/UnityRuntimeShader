@@ -10,8 +10,11 @@ It may not work in some environments, so please contact me if this is the case.
 
 ## Environment
 - **Windows only**
-- **DirectX 11 only**
+- **DirectX 11 / DirectX 12**
 - Unity 2021.3.0f1 or later
+
+For DirectX 12, select **Direct3D12** in the Player Settings graphics API list.
+The native backend uses Unity's D3D12 device through D3D11On12.
 
 ## Installation
 1. Open the Unity Package Manager

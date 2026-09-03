@@ -20,6 +20,7 @@ Dispatcher::~Dispatcher()
 void Dispatcher::Dispatch(int x, int y, int z)
 {
     if (_computeShader == nullptr || _unity == nullptr) return;
+    AcquireWrappedResources();
 
     ID3D11DeviceContext* context;
     _device->GetImmediateContext(&context);
@@ -81,7 +82,7 @@ void Dispatcher::Dispatch(int x, int y, int z)
     }
     
     context->CSSetShader(nullptr, nullptr, 0);
-    
+    ReleaseWrappedResources();
     context->Release();
 }
 
@@ -92,7 +93,14 @@ void Dispatcher::SetRwBuffer(int slot, void* buffer, int count, int stride)
         _rwBuffers[slot] = new RwBuffer();
     }
 
-    HRESULT hr = _rwBuffers[slot]->UpdateBuffer(_device, buffer, count, stride);
+    void* resource = _isD3D12
+        ? WrapResource(buffer, D3D11_BIND_UNORDERED_ACCESS,
+            D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+            D3D12_RESOURCE_STATE_UNORDERED_ACCESS)
+        : buffer;
+    HRESULT hr = resource != nullptr
+        ? _rwBuffers[slot]->UpdateBuffer(_device, resource, count, stride)
+        : E_INVALIDARG;
     if (FAILED(hr))
     {
         UNITY_LOG_ERROR(_logger, ("[KernelDispatcher] Failed to update rw buffer: " + std::to_string(hr)).c_str());

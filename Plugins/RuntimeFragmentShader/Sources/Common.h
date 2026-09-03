@@ -2,6 +2,8 @@
 
 #include <d3d11.h>
 #include <d3d11_3.h>
+#include <d3d11on12.h>
+#include <d3d12.h>
 #include <thread>
 #include <d3dcompiler.h>
 #include <string>
@@ -14,6 +16,7 @@
 #include "Unity/IUnityInterface.h"
 #include "Unity/IUnityGraphics.h"
 #include "Unity/IUnityGraphicsD3D11.h"
+#include "Unity/IUnityGraphicsD3D12.h"
 #include "Unity/IUnityLog.h"
 
 using Microsoft::WRL::ComPtr;

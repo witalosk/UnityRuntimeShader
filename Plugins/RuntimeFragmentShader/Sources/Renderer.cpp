@@ -52,6 +52,7 @@ Renderer::~Renderer()
 void Renderer::Update()
 {
 	if (!_isRunning || _pixelShader == nullptr || _unity == nullptr || _texture == nullptr) return;
+	AcquireWrappedResources();
 
 	if (_nextFrameBufferView != nullptr)
 	{
@@ -104,12 +105,24 @@ void Renderer::Update()
 	context->ClearRenderTargetView(_frameBufferView.Get(), backgroundColor);
 	
 	context->Draw(2 * 3, 0);
+	ReleaseWrappedResources();
 	context->Release();
 }
 
 void Renderer::SetOutputTexture(void* ptr, int width, int height, int format)
 {
-	_texture = static_cast<ID3D11Texture2D*>(ptr);
+	if (_isD3D12)
+	{
+		_wrappedOutputTexture = nullptr;
+		ID3D11Resource* wrapped = WrapResource(ptr, D3D11_BIND_RENDER_TARGET,
+			D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_RENDER_TARGET);
+		_wrappedOutputTexture = wrapped;
+		_texture = static_cast<ID3D11Texture2D*>(wrapped);
+	}
+	else
+	{
+		_texture = static_cast<ID3D11Texture2D*>(ptr);
+	}
 	_width = width;
 	_height = height;
 

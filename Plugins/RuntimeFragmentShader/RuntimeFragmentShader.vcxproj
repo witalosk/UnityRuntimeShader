@@ -167,6 +167,7 @@
     <ClInclude Include="Sources\ShaderExecutorBase.h" />
     <ClInclude Include="Sources\Unity\IUnityGraphics.h" />
     <ClInclude Include="Sources\Unity\IUnityGraphicsD3D11.h" />
+    <ClInclude Include="Sources\Unity\IUnityGraphicsD3D12.h" />
     <ClInclude Include="Sources\Unity\IUnityInterface.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

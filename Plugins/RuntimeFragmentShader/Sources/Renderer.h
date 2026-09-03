@@ -8,6 +8,7 @@ namespace UnityRuntimeShader
 	class Renderer : public ShaderExecutorBase
 	{
 		ID3D11Texture2D* _texture = nullptr;
+		ComPtr<ID3D11Resource> _wrappedOutputTexture;
 		ComPtr<ID3D11RenderTargetView> _frameBufferView = nullptr;
 		ComPtr<ID3D11RenderTargetView> _nextFrameBufferView = nullptr;
 
