@@ -22,7 +22,6 @@ HRESULT ConstantBuffer::UpdateBuffer(ID3D11Device* device, void* buffer, int siz
 	
     if (_constantBuffer != nullptr)
     {
-        _constantBuffer->Release();
         _constantBuffer = nullptr;
     }
 	

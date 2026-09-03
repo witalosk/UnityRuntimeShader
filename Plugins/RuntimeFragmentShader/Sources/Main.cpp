@@ -74,9 +74,10 @@ extern "C"
 	UNITY_INTERFACE_EXPORT const char* UNITY_INTERFACE_API CompilePixelShaderFromString(int id, const char* source)
 	{
 		auto renderer = g_renderers[id];
-		const char* result;
-		result = renderer->CompilePixelShaderFromString(source).c_str();
-		return result;
+		// Keep the returned buffer alive after the temporary std::string is destroyed.
+		static thread_local std::string result;
+		result = renderer->CompilePixelShaderFromString(source);
+		return result.c_str();
 	}
 
 	UNITY_INTERFACE_EXPORT void UNITY_INTERFACE_API SetConstantBuffer(int id, int slot, void* buffer, int size)
@@ -113,15 +114,15 @@ extern "C"
 	{
 		auto dispacher = g_dispatchers[id];
 		delete dispacher;
-		g_renderers.erase(id);
+		g_dispatchers.erase(id);
 	}
 
 	UNITY_INTERFACE_EXPORT const char* UNITY_INTERFACE_API CompileComputeShaderFromString(int id, const char* source)
 	{
 		auto dispatcher = g_dispatchers[id];
-		const char* result;
-		result = dispatcher->CompileComputeShaderFromString(source).c_str();
-		return result;
+		static thread_local std::string result;
+		result = dispatcher->CompileComputeShaderFromString(source);
+		return result.c_str();
 	}
 
 	UNITY_INTERFACE_EXPORT void UNITY_INTERFACE_API Dispatch(int id, int x, int y, int z)

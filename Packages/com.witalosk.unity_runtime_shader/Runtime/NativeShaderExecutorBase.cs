@@ -48,7 +48,17 @@ namespace UnityRuntimeShader
             }
             
             string shaderCode = ShaderPrecompileProcessor.ProcessInclude(ShaderCode);
-            IntPtr result = PluginCompileShaderFromString(Marshal.StringToHGlobalAnsi($"struct VsOutput {{ float4 pos : SV_POSITION; float2 uv : TEXCOORD0; }}; {shaderCode}"));
+            IntPtr sourcePtr = Marshal.StringToHGlobalAnsi($"struct VsOutput {{ float4 pos : SV_POSITION; float2 uv : TEXCOORD0; }}; {shaderCode}");
+            IntPtr result;
+            try
+            {
+                result = PluginCompileShaderFromString(sourcePtr);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(sourcePtr);
+            }
+
             string resultString = Marshal.PtrToStringAnsi(result);
             if (!string.IsNullOrEmpty(resultString) || resultString != "")
             {

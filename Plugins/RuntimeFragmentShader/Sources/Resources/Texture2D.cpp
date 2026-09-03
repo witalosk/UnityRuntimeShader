@@ -22,7 +22,6 @@ HRESULT Texture2D::UpdateTexture(ID3D11Device* device, void* tex, int format)
     
     if (_shaderResourceView != nullptr)
     {
-        _shaderResourceView.Get()->Release();
         _shaderResourceView = nullptr;
     }
 

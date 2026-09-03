@@ -22,7 +22,6 @@ HRESULT RwBuffer::UpdateBuffer(ID3D11Device* device, void* buffer, int count, in
     
     if (_unorderedAccessView != nullptr)
     {
-        _unorderedAccessView.Get()->Release();
         _unorderedAccessView = nullptr;
     }
 

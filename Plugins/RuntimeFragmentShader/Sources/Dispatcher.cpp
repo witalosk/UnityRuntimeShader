@@ -124,6 +124,7 @@ std::string Dispatcher::CompileComputeShaderFromString(const std::string& source
     }
 
     hr = _device->CreateComputeShader(compiledShader->GetBufferPointer(), compiledShader->GetBufferSize(), nullptr, _computeShader.GetAddressOf());
+    compiledShader->Release();
 
     if (FAILED(hr))
     {

@@ -74,8 +74,8 @@ void Renderer::Update()
 	context->VSSetShader(_vertexShader.Get(), nullptr, 0);
 	
 	// RS: set rasterizer stage
-	const D3D11_VIEWPORT* vp = new D3D11_VIEWPORT{0.0f, 0.0f, static_cast<float>(_width), static_cast<float>(_height), 0.0f, 1.0f};
-	context->RSSetViewports(1, vp);
+	const D3D11_VIEWPORT vp{0.0f, 0.0f, static_cast<float>(_width), static_cast<float>(_height), 0.0f, 1.0f};
+	context->RSSetViewports(1, &vp);
 	context->RSSetState(_rasterState.Get());
 	
 	// PS: set pixel shader
@@ -117,7 +117,8 @@ void Renderer::SetOutputTexture(void* ptr, int width, int height, int format)
 	{
 		_nextFrameBufferView = nullptr;
 	}
-	_device->CreateRenderTargetView(_texture, new CD3D11_RENDER_TARGET_VIEW_DESC(D3D11_RTV_DIMENSION_TEXTURE2D, static_cast<DXGI_FORMAT>(format)), _nextFrameBufferView.GetAddressOf());
+	const CD3D11_RENDER_TARGET_VIEW_DESC desc(D3D11_RTV_DIMENSION_TEXTURE2D, static_cast<DXGI_FORMAT>(format));
+	_device->CreateRenderTargetView(_texture, &desc, _nextFrameBufferView.GetAddressOf());
 }
 
 void Renderer::CreateResources()
@@ -205,6 +206,7 @@ std::string Renderer::CompilePixelShaderFromString(const std::string& source)
 	}
 
 	hr = _device->CreatePixelShader(compiledShader->GetBufferPointer(), compiledShader->GetBufferSize(), nullptr, _pixelShader.GetAddressOf());
+	compiledShader->Release();
 
 	if (FAILED(hr))
 	{
@@ -231,6 +233,7 @@ ID3DBlob* Renderer::CompileVertexShader()
 	}
 
 	hr = _device->CreateVertexShader(compiledShader->GetBufferPointer(), compiledShader->GetBufferSize(), nullptr, _vertexShader.GetAddressOf());
+	compiledShader->Release();
 	
 	if (FAILED(hr))
 	{

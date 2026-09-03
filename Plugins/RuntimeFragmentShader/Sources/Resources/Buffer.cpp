@@ -22,7 +22,6 @@ HRESULT Buffer::UpdateBuffer(ID3D11Device* device, void* buffer, int count, int 
     
     if (_shaderResourceView != nullptr)
     {
-        _shaderResourceView.Get()->Release();
         _shaderResourceView = nullptr;
     }
     
